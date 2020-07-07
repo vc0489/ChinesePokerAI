@@ -10,12 +10,10 @@ import ChinesePokerLib.vars.GlobalConstants as GlobC
 
 
 def main(start_game_id, end_game_id):
-data_obj = DataClass()
+  data_obj = DataClass()
 
-strategy = ChinesePokerPctileScoreStrategyClass()
+  strategy = ChinesePokerPctileScoreStrategyClass()
 
-if gen_from_db:
-  #deal_split_gen = data_obj.yield_dealt_hands_from_db(start_deal_no, end_deal_no)
   deal_split_gen = data_obj.yield_splits_from_dealt_hands(strategy, start_game_id, end_game_id, from_db=True)
   start = timer()
   while 1:

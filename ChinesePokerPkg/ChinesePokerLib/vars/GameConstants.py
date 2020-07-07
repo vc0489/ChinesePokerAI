@@ -86,7 +86,7 @@ GEN_default_score_column_transforms = {
 ### END Will be defunct END ###
 ###############################
 
-
+"""
 DATADIR = op.join(
   '/Users',
   'vhc08',
@@ -131,7 +131,7 @@ set_size = 3
 for n_cards in range(3,9):
   data_files_for_set_scoring[f'Best{set_size}CardSetOutOf{n_cards}'] = \
     _find_latest_score_file(n_cards, set_size)
-
+"""
 
 ########################################
 ### START DB related constants START ###

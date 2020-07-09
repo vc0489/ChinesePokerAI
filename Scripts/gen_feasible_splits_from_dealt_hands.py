@@ -41,9 +41,7 @@ def main(start_game_id, end_game_id, send_slack_update=True):
     print (f'GameID {game_id} - total {min_elapsed} min_elapsed')
     
     if send_slack_update:
-      msg =  'gen_feasible_splits_from_dealt_hands.py:\n' + \
-            f'-->Generated feasible splits for GameID {game_id}.\n' + \
-            f'-->Total time elapsed {min_elapsed} min.'
+      msg = f'-->Generated feasible splits for GameID {game_id} - {min_elapsed} min elapsed.'
       post_message_to_slack_channel(
         msg, 
         GlobC.DEFAULT_SLACK_VARS['channel'], 

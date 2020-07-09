@@ -15,7 +15,7 @@ slack_user_name = 'Chokerot'
 def post_message_to_slack_channel(text, channel, token=None, icon=None, username=None, blocks=None):
   
   if token is None:
-    slack_token = os.environ['SLACK_TOKEN']
+    token = os.environ['SLACK_TOKEN']
   return requests.post('https://slack.com/api/chat.postMessage', {
     'token': token,
     'channel': channel,

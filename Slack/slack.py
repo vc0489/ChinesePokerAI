@@ -2,17 +2,15 @@
 import requests
 from pathlib import Path
 import json
+import os
+import sys
 
 #%%
 
-slack_token = 'xoxb-530987712531-1229869759123-sRfLUlGs2jb63x3rhCaHTgr2'
+slack_token = os.environ['SLACK_TOKEN']
 slack_channel = '#chinese-poker'
-
-#slack_icon = Path(__file__).parent / 'playing_cards_icon.png'
 slack_icon = 'https://img.icons8.com/color/96/000000/cards.png'
 slack_user_name = 'Chokerot'
-
-print(slack_icon)
 
 def post_message_to_slack(text, blocks = None):
     return requests.post('https://slack.com/api/chat.postMessage', {
@@ -26,9 +24,10 @@ def post_message_to_slack(text, blocks = None):
 
 
 
-msg = 'Testing. 1,2,3.'
-
-post_message_to_slack(msg)
+if __name__ == "__main__":
+  msg = 'Testing. 1,2,3.'
+  post_message_to_slack(msg)
+  sys.exit()
 
 
 # %%

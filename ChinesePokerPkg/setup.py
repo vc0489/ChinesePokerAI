@@ -12,6 +12,11 @@ setup(
   packages=[
     "ChinesePokerLib",
     "ChinesePokerLib.classes",
+    "ChinesePokerLib.vars",
+    "ChinesePokerLib.modules",
+    "ChinesePokerLib.modules",
+    "ChinesePokerLib.modules.Webservice",
+    "ChinesePokerLib.modules.Webservice.app",
   ],
   package_data={"": ["VERSION"]},
   include_package_data=True,

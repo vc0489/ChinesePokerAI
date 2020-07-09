@@ -27,10 +27,5 @@ def post_message_to_slack_channel(text, channel, token=None, icon=None, username
 
 
 
-if __name__ == "__main__":
-  msg = 'Testing. 1,2,3.'
-  post_message_to_slack(msg)
-  sys.exit()
-
 
 # %%

@@ -1,6 +1,8 @@
 from flask import Flask
 
-app = Flask(__name__)
+from config import Config
 
-#from ChinesePokerLib.modules.Webservice.app import routes
+app = Flask(__name__)
+app.config.from_object(Config)
+
 from app import routes

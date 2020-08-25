@@ -961,6 +961,9 @@ class CardGroupClassifier(BaseCardGroupClass):
     return combs
 
 class CardGroupCode(BaseCardGroupClass):
+  fill_value = GConst.CHINESE_POKER_default_code_fill_value
+  universal_score_fill_value = 99
+
   def __init__(
     self, 
     code, 
@@ -970,21 +973,70 @@ class CardGroupCode(BaseCardGroupClass):
     min_score=0,
     default_method_set_no=None,
   ):
+    """Constructor
+
+    Args:
+        code ([type]): Can be tuple (1,2,3), list [1,2,3], or string '(1,2,3)'
+        card_type (str, optional): [description]. Defaults to 'STANDARD'.
+        game_type ([type], optional): [description]. Defaults to GConst.ChinesePokerKey.
+        max_score (int, optional): [description]. Defaults to 100.
+        min_score (int, optional): [description]. Defaults to 0.
+        default_method_set_no ([type], optional): [description]. Defaults to None.
+    """
     super().__init__(game_type, card_type)
-    self.code = tuple(code)
+
+    self.code = tuple(self._parse_code_input(code))
     
     self.max_score = max_score
     self.min_score = min_score
     self.default_method_set_no = default_method_set_no
+    
+    self.universal_score = self.__class__.get_universal_score(self.code)
+
     return
   
+  def _parse_code_input(self, code_input):
+    if isinstance(code_input, str):
+      remove_chars = "()[]"
+        
+      for char in remove_chars:
+        code_input = code_input.replace(char, "")
+        
+      code_input = [int(code) for code in code_input.split(',')]
+    return code_input
 
-  def get_code_fixed_length(self, code_length=3, fill_value=-1):
-    if len(self.code) < code_length:
-      code = self.fill_code(self.code, code_length, fill_value)
+  def get_code_fixed_length(self, code_length=3, fill_value=None):
+    if fill_value is None:
+      fill_value = self.__class__.fill_value
+
+    #if len(self.code) < code_length:
+    #  code = self.fill_code(self.code, code_length, fill_value)
+    #else:
+    #  code = self.code[:code_length]
+    return self.__class__._get_code_fixed_length(self.code, code_length, fill_value)
+  
+  @classmethod
+  def _get_code_fixed_length(cls, code, code_length, fill_value):
+    if len(code) < code_length:
+      code = cls.fill_code(code, code_length, fill_value)
     else:
-      code = self.code[:code_length]
+      code = code[:code_length]
     return code
+
+  @classmethod
+  def get_universal_score(cls, code_tuple, fill_to_code_length=6):
+
+    universal_score = 0
+    
+    univ_code_tuple = cls._get_code_fixed_length(
+      code_tuple, 
+      fill_to_code_length, cls.universal_score_fill_value
+    )
+
+    for codeI, code in enumerate(univ_code_tuple):
+      universal_score += code*pow(10, -2*(codeI+1))
+
+    return -universal_score
 
   def __repr__(self):
     repr_str = f'CardGroupCode{str(self.code)}'
@@ -1011,6 +1063,8 @@ class CardGroupCode(BaseCardGroupClass):
     return self.code == other.code
   
   def __gt__(self, other):
+    return self.universal_score > other.universal_score
+    """
     for i, item in enumerate(self.code):
       if i == len(other.code):
         return True
@@ -1019,7 +1073,7 @@ class CardGroupCode(BaseCardGroupClass):
       elif item > other.code[i]:
         return False
     return False
-
+    """
   def __ge__(self, other):
     if self.__eq__(other) or self.__gt__(other):
       return True
@@ -1044,6 +1098,7 @@ class CardGroupCode(BaseCardGroupClass):
 
     return score_dict[code_fixed_length]
   
+  @deprecated
   def calc_code_score(
     self, 
     method=None, 

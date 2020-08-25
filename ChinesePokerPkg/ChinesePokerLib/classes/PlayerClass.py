@@ -44,9 +44,9 @@ class ChinesePokerPlayerClass:
     self.split_info = {
       'Inds':None,
       'Codes':None,
-      'Scores':None,
+      'SupScores':None,
       'Cards':None,
-      'WeightedScore':None,
+      'SplitScore':None,
       'SelectionTime':None,
       'SplitsGenerated':None,
     }
@@ -86,16 +86,14 @@ class ComputerChinesePokerPlayerClass(ChinesePokerPlayerClass):
     if self.cur_splits_data is not None:
       split_info, split_det, time_to_choose_split = self.strategy.pick_single_split_from_full_split_data(self.cur_splits_data)
     else:
-      split_info, split_det, time_to_choose_split = self.strategy.pick_single_split(
-        self.cur_hand.cards
-      )
+      split_info, split_det, time_to_choose_split = self.strategy.pick_single_split(self.cur_hand.cards)
       
     # VC TODO: add var checking (see HandClass)
-    self.split_info['Inds'] = split_info[0]
-    self.split_info['Cards'] = split_info[1]
-    self.split_info['Codes'] = split_info[2]
-    self.split_info['Scores'] = split_info[5]
-    self.split_info['WeightedScore'] = split_info[6]
+    self.split_info['Inds'] = split_info.Inds
+    self.split_info['Cards'] = split_info.Cards
+    self.split_info['Codes'] = split_info.Codes
+    self.split_info['SupScores'] = split_info.StratSupScores
+    self.split_info['SplitScore'] = split_info.StratSplitScore
     if split_det:
       self.split_info['SplitsGenerated'] = len(split_det)
     else:

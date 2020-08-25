@@ -80,7 +80,9 @@ GEN_default_score_column_transforms = {
   ChinesePokerKey: ([lambda x: 100-x], [lambda x: 100-x], [lambda x: 100-x])
 }
 
+CHINESE_POKER_default_base_bonus_score_weights = (0.5, 0.5)
 
+CHINESE_POKER_default_code_fill_value = -1
 
 ###############################
 ### END Will be defunct END ###

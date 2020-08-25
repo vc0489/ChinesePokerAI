@@ -1,5 +1,6 @@
 import random
 from itertools import product
+from deprecated import deprecated
 
 import ChinesePokerLib.vars.CardConstants as CConst
 from ChinesePokerLib.classes.CardClass import CardClass
@@ -13,6 +14,23 @@ class DeckClass():
     self.suit_strength_order = suit_number_strength_order['Suits']
     self.number_strength_order = suit_number_strength_order['Numbers']
     
+    # deck_card_order looks like: 
+    # [
+    #   ('S', 'A'),
+    #   ('S', 'K'),
+    #   ('S', 'Q'),
+    #   ...
+    #   ('S', '2'),
+    #   ('H', 'A'),
+    #   ...
+    #   ('H', '2'),
+    #   ('D', 'A'),
+    #   ...
+    #   ('D', '2'),
+    #   ('C', 'A'),
+    #   ...
+    #   ('C', '2'),
+    # ]
     self.deck_card_order = list(product(suit_number_strength_order['Suits'], suit_number_strength_order['Numbers']))
     
     self._gen_deck()
@@ -47,19 +65,34 @@ class DeckClass():
       card.deck_card_ind = self.deck_card_order.index((card.suit,card.number))
     return deck
   
-  def _find_cards_in_deck(self, suit_number_sets):
-    """[summary]
+  def index(self, card_str, deck_card_strs=None):
+    if deck_card_strs is None:
+      deck_card_strs = self._gen_deck_card_strs()
+    
+    if isinstance(card_str, str):
+      return deck_card_strs.index(card_str)
+    elif isinstance(card_str, list):
+      return [deck_card_strs.index(card) for card in card_str]
+  
+  def _gen_deck_card_strs(self):
+    return [str(card) for card in self.deck]
+
+  @deprecated
+  def _find_cards_in_deck(self, card_strs):
+    """Return indices of list of cards in current deck (self.deck)
 
     Args:
-        suit_number_sets ([type]): e.g. [('S','2'), ('D','5'), ('C','J')]
+        card_strs (list[str]): e.g. ['S2', 'D5', 'CJ']
 
     Returns:
         [list]: List of indices of cards in deck
     """
-
-    deck_suit_number_sets = [(card.suit, card.number) for card in self.deck]
-    card_inds = [deck_suit_number_sets.index(sn_set) for sn_set in suit_number_sets]
+    
+    deck_card_strs = self.gen_deck_card_strs()
+    card_inds = [deck_card_strs.index(card_str) for card_str in card_strs]
     return card_inds
+
+
 
   def shuffle(self):
     shuffled_deck = list(zip(self.deck, self.inds_of_deck_card_order))
@@ -118,37 +151,102 @@ class DeckClass():
       hands[cI % n_hands].append(self.deck[cI])
     return hands
   
-  def deal_custom_hand(self, these_cards):
+  def deal_partially_custom_cards(self, custom_cards, n_hands=4, n_cards_per_hand=None, shuffle_first=True):
+    
+    if shuffle_first:
+      self.shuffle()
+      
+    if not isinstance(custom_cards[0], list):
+      custom_cards = [custom_cards] + [[] for _ in range(n_hands-1)]
+    hands_card_inds = []
+    
+    all_custom_card_inds = []
+    n_custom_cards = 0
+    for hI in range(n_hands):
+      if len(custom_cards[hI]) == 0:
+        hands_card_inds.append([])
+      else:
+        hand_custom_card_inds = self.deal_custom_hand(custom_cards[hI], True)
+        all_custom_card_inds += hand_custom_card_inds
+        n_custom_cards += len(hand_custom_card_inds)
+        hands_card_inds.append(hand_custom_card_inds)
+
+    if n_cards_per_hand is None:
+      n_cards_per_hand = len(self.deck)/n_hands
+      n_cards_to_deal = len(self.deck) 
+
+    else:
+      n_cards_to_deal = n_hands * n_cards_per_hand
+    
+    n_cards_to_deal -= n_custom_cards
+    
+    hI = 0 # Hand index
+    cI = 0 # Actual card index in deck
+    for dI in range(n_cards_to_deal): # Dealt card number index
+      while cI in all_custom_card_inds:
+        cI += 1
+      
+      while len(hands_card_inds[hI]) == n_cards_per_hand:
+        hI = (hI+1) % n_hands
+      
+      hands_card_inds[hI].append(cI)
+      cI += 1
+      hI = (hI+1) % n_hands
+    
+    hands = [[self.deck[ind] for ind in inds] for inds in hands_card_inds]
+    return hands
+  
+  def deal_custom_hand(self, these_cards, ret_inds=False):
     # these_cards possibilities
     # Option1: [(suit1, number1), (suit2, number2), etc.]
     # Option2: container of [suit][number] strings
     # Option3: single string of space- and/or comma-separated [suit][number] with or without brackets
     
 
-    # Detect input type
-    if isinstance(these_cards[0], (tuple, list)) and len(these_cards[0]) == 2:
-      pass
+    # Convert input cards to Option2
+    these_cards = self._convert_list_of_cards_from_user(these_cards)
+
+    card_inds = self.index(these_cards)
+    
+    if ret_inds:
+      return card_inds
+
+    hand = [self.deck[ind] for ind in card_inds]
+    
+    return hand
+
+  def _convert_list_of_cards_from_user(self, cards_input):
+    """Convert to list of [suit][number] strings
+
+    Args:
+        cards (list): Possible options:
+          # [1]: [(suit1, number1), (suit2, number2), etc.]
+          # [2]: container of [suit][number] strings  - no conversion required
+          # [3]: single string of space- and/or comma-separated [suit][number] with or without brackets
+    """
+    if isinstance(cards_input[0], (tuple, list)) and len(cards_input[0]) == 2:
+      # Simply concatenate strings
+      cards_output = [item[0]+item[1] for item in cards_input]
+    
     else:
-      if isinstance(these_cards, str):
+      if isinstance(cards_input, str):
 
         remove_chars = "()[]"
         
         for char in remove_chars:
-          these_cards = these_cards.replace(char, "")
+          cards_input = cards_input.replace(char, "")
         
-        if ',' in these_cards:
-          these_cards = [card_str.strip() for card_str in these_cards.split(',')]
+        if ',' in cards_input:
+          cards_input = [card_str.strip() for card_str in cards_input.split(',')]
         else:
-          these_cards = these_cards.split()
+          cards_input = cards_input.split()
       
-      elif isinstance(these_cards[0], str):
+      # Correct format already
+      elif isinstance(cards_input[0], str):
         pass
       
-      these_cards = [(card_str[0], card_str[1:]) for card_str in these_cards]
-
-    hand = []
-    card_inds = self._find_cards_in_deck(these_cards)
-    for card_ind in card_inds:
-      hand.append(self.deck[card_ind])
-    
-    return hand
+      elif isinstance(cards_input[0], CardClass):
+        cards_input = [str(card) for card in cards_input]
+      cards_output = cards_input
+      
+    return cards_output

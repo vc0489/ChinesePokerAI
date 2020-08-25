@@ -12,17 +12,26 @@ import ChinesePokerLib.vars.CardConstants as CC
 # S = Spades
 
 class CardClass:
+  card_strength_type='STANDARD'
+  suit_name_map = CC.__dict__[card_strength_type + '_suit_name_map']
+  full_suit_name_map = CC.__dict__[card_strength_type + '_full_suit_name_map']
+  short_suit_name_map = CC.__dict__[card_strength_type + '_short_suit_name_map']
+
+  number_name_map = CC.__dict__[card_strength_type + '_number_name_map']
+  full_number_name_map = CC.__dict__[card_strength_type + '_full_number_name_map']
+  short_number_name_map = CC.__dict__[card_strength_type + '_short_number_name_map']
+
   def __init__(
     self, 
     suit: str, 
     number: Union[str, int],
-    card_strength_type: str='STANDARD',
+    #card_strength_type: str='STANDARD',
   ):
     
-    self.card_strength_type = card_strength_type.upper()
-    self._validate_card_strength_type()
+    #self.card_strength_type = card_strength_type.upper()
+    #self._validate_card_strength_type()
 
-    self._initialise_card_strength_type_constants()
+    #self._initialise_card_strength_type_constants()
     
     number = str(number)
     self._validate_number(number)
@@ -35,24 +44,31 @@ class CardClass:
     self.deck_card_ind = None
     return
   
+  @classmethod
+  def init_from_str(cls, card_str):
+    return cls(card_str[0], card_str[1:])
+  """
   def _validate_card_strength_type(self):
     if self.card_strength_type != 'STANDARD':
       raise UnknownCardStrengthTypeError(f'card_stregnth_type {self.card_strength_type} not valid.')
       
     return
+  """
 
+  """
   def _initialise_card_strength_type_constants(self):
-    self.suit_name_map = CC.__dict__[self.card_strength_type + '_suit_name_map']
-    self.full_suit_name_map = CC.__dict__[self.card_strength_type + '_full_suit_name_map']
-    self.short_suit_name_map = CC.__dict__[self.card_strength_type + '_short_suit_name_map']
-    
-    self.number_name_map = CC.__dict__[self.card_strength_type + '_number_name_map']
-    self.full_number_name_map = CC.__dict__[self.card_strength_type + '_full_number_name_map']
-    self.short_number_name_map = CC.__dict__[self.card_strength_type + '_short_number_name_map']
+    #self.suit_name_map = CC.__dict__[self.card_strength_type + '_suit_name_map']
+    #self.full_suit_name_map = CC.__dict__[self.card_strength_type + '_full_suit_name_map']
+    #self.short_suit_name_map = CC.__dict__[self.card_strength_type + '_short_suit_name_map']
+
+    #self.number_name_map = CC.__dict__[self.card_strength_type + '_number_name_map']
+    #self.full_number_name_map = CC.__dict__[self.card_strength_type + '_full_number_name_map']
+    #self.short_number_name_map = CC.__dict__[self.card_strength_type + '_short_number_name_map']
 
     #self._get_suit_number_strength_order()
     return
-  
+  """
+
   def _validate_number(self, number: str):
     self.number = None
     self.full_number = None
@@ -82,7 +98,14 @@ class CardClass:
       self.full_suit = suit
       self.suit = self.short_suit_name_map[suit]
     return
-
+  
+  @classmethod
+  def is_valid_suit_and_number(cls, suit, number):
+    if suit in cls.full_suit_name_map and number in cls.full_number_name_map:
+      return True
+    else:
+      return False
+    
   def __repr__(self):
     """Representation = [Suit][number]
 

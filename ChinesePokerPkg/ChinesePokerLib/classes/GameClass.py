@@ -126,7 +126,7 @@ class ChinesePokerGameClass:
     self.cur_score_details = None
     self.cur_split_ranks = None
     self.cur_round_time = None
-    
+    self.cur_base_scores = None
     return
 
   def _create_computer_player(self):
@@ -170,26 +170,31 @@ class ChinesePokerGameClass:
 
     # Compare splits
     comparison_results, self.cur_split_ranks = self._compare_splits()
-    self.cur_scores, self.cur_score_details = self._score_comparison(comparison_results)
+    self.cur_scores, self.cur_score_details, self.cur_base_scores = self._score_comparison(comparison_results)
     return 
   
   def _score_comparison(self, comparison_results):
     tot_scores = {}
     det_scores = {}
+    base_scores = {}
     for seat in self.player_seat_labels:
       player_score = 0
+      player_base_score = 0
       det_scores[seat] = {}
       for opp_seat in self.player_seat_labels:
         if opp_seat != seat:
           comp_score = sum(comparison_results[seat][opp_seat])
+
+          player_base_score += comp_score
+
           if abs(comp_score) == len(comparison_results[seat][opp_seat]):
             comp_score = 2*comp_score
           
           player_score += comp_score
           det_scores[seat][opp_seat] = comp_score
       tot_scores[seat] = player_score
-
-    return tot_scores, det_scores
+      base_scores[seat] = player_base_score
+    return tot_scores, det_scores, base_scores
 
   def _compare_splits(self):
     seat_pairs = list(combinations(self.player_seat_labels,2))
@@ -297,13 +302,14 @@ class ChinesePokerGameClass:
       history_data['Players'][seat_label]['PlayerID'] = this_player.id
       history_data['Players'][seat_label]['SplitCards'] = this_player.split_info['Cards']
       history_data['Players'][seat_label]['SplitCodes'] = this_player.split_info['Codes']
-      history_data['Players'][seat_label]['SplitCodeScores'] = this_player.split_info['Scores']
+      history_data['Players'][seat_label]['SplitCodeSupScores'] = this_player.split_info['SupScores']
       history_data['Players'][seat_label]['SplitRanks'] = self.cur_split_ranks[seat_label]
-      history_data['Players'][seat_label]['WeightedCodeScore'] = this_player.split_info['WeightedScore']
+      history_data['Players'][seat_label]['SplitCodeScore'] = this_player.split_info['SplitScore']
       history_data['Players'][seat_label]['GameScoreDetails'] = self.cur_score_details[seat_label]
       history_data['Players'][seat_label]['TotGameScore'] = self.cur_scores[seat_label]
       history_data['Players'][seat_label]['SplitSelectionTime'] = this_player.split_info['SelectionTime']
       history_data['Players'][seat_label]['SplitsGenerated'] = this_player.split_info['SplitsGenerated']
+      history_data['Players'][seat_label]['BaseGameScore'] = self.cur_base_scores[seat_label]
     history_data['Dealer'] = self.player_seat_labels[self.cur_dealer_ind]
     history_data['RoundTime'] = self.cur_round_time
     
@@ -376,5 +382,8 @@ class ChinesePokerGameClass:
 
   def _dist_splits_data(self, splits_data):
     for i, seat_label in enumerate(self.__class__.player_seat_labels):
-      self.players[seat_label].cur_splits_data = splits_data[i]
+      if 'P' in list(splits_data.keys())[0]:
+        self.players[seat_label].cur_splits_data = splits_data[f'P{i}']
+      else:
+        self.players[seat_label].cur_splits_data = splits_data[i]
     return

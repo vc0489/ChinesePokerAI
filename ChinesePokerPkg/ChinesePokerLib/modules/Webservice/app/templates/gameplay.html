@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block headblock %}
+<style>
+    table, th, td {
+      border: 1px solid black;
+      border-collapse: collapse;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+  <h1>Gameplay Results</h1>
+
+  You chose the split with rank {{ rank }} of {{ n_splits }}
+  Your score: {{ rel_score }}
+
+  <hr>
+
+  <h1>Splits Ranked by Score:</h1>
+  <table>
+    <tr>
+        <th>Rank</th>
+        <th>Set 1</th>
+        <th>Set 2</th>
+        <th>Set 3</th> 
+        <th>Score</th>
+    </tr>
+    
+    {% for split in ranked_splits_imgs %} 
+    <tr>
+        <th>{{ loop.index }}</th>
+        {% for img_str in split %}
+            <th>
+                <img src="data:image/png;base64, {{ img_str }}", height="66">
+            </th>
+        {% endfor %}
+        <th>
+        {{ split_scores[loop.index0] }}
+        </th>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <a href="{{ url_for('play_game') }}"">New Game</a>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block headblock %}
+<style>
+    table, th, td {
+      border: 1px solid black;
+      border-collapse: collapse;
+    }
+
+    a:visited {
+        color: blue;
+        text-decoration: underline
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <h1>Cards Dealt: </h1>
+    {% for suit_list in dealt_img_filenames %}
+        {% for img_info in suit_list %}
+            <img src="/static/CardImages/{{ img_info[0] }}.png", width="35", height="66", title="{{ img_info[1] }}">
+        {% endfor %}
+        <br>
+    {% endfor %}
+    <hr>
+    <h1>Suggested Splits: </h1>
+    <table>
+        <tr>
+            <th>Split</th>
+            <th>Set 1</th>
+            <th>Set 2</th>
+            <th>Set 3</th> 
+            <th></th>
+        </tr>
+        
+        {% for split in suggested_split_imgs %} 
+        <tr>
+            <th>Split {{ loop.index }}</th>
+            {% for img_str in split %}
+                <th>
+                    <img src="data:image/png;base64, {{ img_str }}", height="66">
+                </th>
+            {% endfor %}
+            <th>
+            <a href="{{ url_for('game_play_split', split_no=loop.index) }}">Play this set</a>
+            </th>
+        </tr>
+        {% endfor %}
+    </table>
+{% endblock %}

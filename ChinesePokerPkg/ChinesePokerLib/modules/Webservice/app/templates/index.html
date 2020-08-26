@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Hello, {{ user.username }}!</h1>
+
+    <h2>Recent hand queries:</h2>
+    {% for query in hand_queries %}
+    <div><p>{{ query.cards }}</b></p></div>
+    {% endfor %}
+{% endblock %}

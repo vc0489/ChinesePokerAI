@@ -1,0 +1,277 @@
+{% extends "base.html" %}
+
+
+{% block headblock %}
+<style>
+  ul {
+    list-style-type: none;
+  }
+  
+  li {
+    display: inline-block;
+  }
+  
+  input[type="checkbox"][id^="{{ card_img_prefix }}"] {
+    display: none;
+  }
+  
+  label {
+    border: 1px solid #fff;
+    padding: 0px;
+    display: block;
+    position: relative;
+    margin: 0px;
+    cursor: pointer;
+    -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      -khtml-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+  }
+  
+  label:before {
+    background-color: white;
+    color: white;
+    content: " ";
+    display: block;
+    border-radius: 50%;
+    border: 1px solid grey;
+    position: absolute;
+    top: 35%;
+    left: 20%;
+    width: 60%;
+    height: 30%;
+    text-align: center;
+    line-height: 150%;
+    transition-duration: 0.25s;
+    transform: scale(0);
+  }
+  
+  label img {
+    max-height: 100%;
+    max-width: 100%;
+    transition-duration: 0.1s;
+    transform-origin: 50% 50%;
+  }
+  
+  :checked + label {
+    border-color: #ddd;
+  }
+  
+  :checked + label:before {
+    content: "✓";
+    background-color: green;
+    transform: scale(1);
+    z-index: 1;
+  }
+  
+  :checked + label img {
+    transform: scale(0.9);
+    box-shadow: 0 0 0.25em 0.25em #09f306;
+    z-index: -1;
+  }
+
+
+  .card-image-container {
+      display: grid;
+      grid-template-columns: repeat(13, 35px);
+      grid-template-rows: repeat(4, 70px) 35px 35px;
+  }
+
+  .card-image {
+    max-height: 100%;
+    max-width: 100%;
+  }
+
+  
+  .button {
+    /* margin-left: auto;
+    margin-right: auto; */
+    margin-top: auto;
+    margin-bottom: auto;
+    max-width: 100%;
+  }
+  
+  button {
+    display: block;
+    width: 75%;
+    
+  }
+  
+  button.random-button {
+    width: 100%;
+  }
+
+   
+  div.dropdown{
+    display:flex; 
+    flex-direction: row; 
+    justify-content: center; 
+    align-items: center;
+  }
+
+  div.n_suggestions {
+    grid-area: 5 / 4 / 6 / 9;
+  }
+
+  div.unique_code_levels {
+    grid-area: 5 / 9 / 6 / 14;
+  }
+  
+  div.button {
+    align-items: center;
+    justify-content: center;
+    display:flex;
+  }
+  div.random.button {
+    grid-area: 5 / 1 / 6 / 4;
+  }
+  
+  div.submit-select.button {
+    grid-area: 6 / 1 / 7 / 14;
+  }
+</style>
+<noscript>
+    <style>
+        button.random-button {
+            display:none !important;
+        }
+    </style>
+</noscript>
+<script
+  src="https://code.jquery.com/jquery-3.5.1.js"
+  integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
+  crossorigin="anonymous"></script>
+<script>
+
+function selectRandom() {
+    //var ids = $(".input-card-image").map(function() { return this.id; }).toArray();
+    var ids = $(".input-card-image").toArray();
+    console.log(ids)
+    console.log(ids.length);
+    var inds = new Array(ids.length);
+    console.log(inds);
+    //console.log(ids)
+    var n_cards = 13;
+    random_inds = getRandomIndices(ids.length, n_cards);
+    console.log(random_inds);
+
+    for (var i=0; i<ids.length; i++) {
+      if (random_inds.includes(i)) {
+        ids[i].checked = true;
+      } else {
+        ids[i].checked = false;
+      }
+    }
+    //var random_ids = getRandom(inds, n_cards)
+    
+    /*
+    for (var i = 0; i < ids.len; i++) {
+      console.log(random_ids[i]);
+      random_ids[i].checked = true;
+    }
+    */
+
+}
+
+function getRandomIndices(arr_len, n){
+  return getRandomNumbers(0, arr_len, n)
+}
+
+function getRandomNumbers(lower_bound, upper_bound, n) {
+  var random_numbers = [];
+
+  while (random_numbers.length < n) {
+    var random_number = Math.floor(Math.random()*(upper_bound - lower_bound) + lower_bound);
+    if (random_numbers.indexOf(random_number) == -1) { 
+        // Yay! new random number
+        random_numbers.push( random_number );
+    }
+  }
+  return random_numbers
+  /*  
+  var result = new Array(n), taken = new Array(max_number);
+    if (n > len)
+        throw new RangeError("getRandom: more elements taken than available");
+    while (n--) {
+        var x = Math.floor(Math.random() * max_number);
+        result[n] = x in taken ? taken[x] : x;
+        taken[x] = --max_number in taken ? taken[max_number] : max_number;
+    }
+    return result;
+  */
+}
+function getRandom(arr, n) {
+    var result = new Array(n),
+        len = arr.length,
+        taken = new Array(len);
+    if (n > len)
+        throw new RangeError("getRandom: more elements taken than available");
+    while (n--) {
+        var x = Math.floor(Math.random() * len);
+        result[n] = arr[x in taken ? taken[x] : x];
+        taken[x] = --len in taken ? taken[len] : len;
+    }
+    return result;
+}
+</script>
+<!--var id = document.getElementById("cardimg-S3");-->
+{% endblock %}
+
+
+{% block content %}
+    <h1>Split Suggester</h1>
+    <!-- Format: comma-separated cards [SUIT][NUMBER]. <br>
+    For example SK,DA,C10,CQ,S2,S5,S6,H10,HJ,S3,D2,H3,CA</h1></h2>
+    -->
+    <h2>Please select 13 cards</h2>
+    <form action="/suggest" method="POST" novalidate>
+    <div class="card-image-container">
+        
+    
+        {% for img_info in all_card_img_info %}
+          <div>
+              <input class="input-card-image" type="checkbox" id="{{ card_img_prefix }}{{ img_info[2] }}" name="{{ card_img_prefix }}{{ img_info[2] }}"/>
+              <label for="{{ card_img_prefix }}{{ img_info[2] }}">
+                  <img class="card-image" src ="/static/CardImages/{{ img_info[0] }}.png", title="{{ img_info[1] }}" />
+              </label>
+          </div>
+        {% endfor %}
+        
+        <div class="button random">
+          <button 
+            onclick="selectRandom()" 
+            class="random-button" 
+            type="button" 
+            name="random-cards" 
+            value="Random">Random cards</button>
+        </div>
+
+        <div class="dropdown n_suggestions">
+          <label for="dropdown-suggestions">Suggestions</label>
+          <select id="dropdown-suggestions" name="dropdown-suggestions">
+            <option value=5>5</option>
+            <option value=10">10</option>
+            <option value=20>20</option>
+            <option value=50>50</option>
+          </select>
+        </div>
+        <div class="dropdown unique_code_levels">
+          <label for="dropdown-variability">Variability</label>
+          <select id="dropdown-variability" name="dropdown-variability">
+            <option value=0>None</option>
+            <option value=3>Low</option>
+            <option value=2>Medium</option>
+            <option value=1>High</option>
+          </select>
+        </div>
+        
+        <div class="button submit-select">
+          <button type="submit" name="submit-cards" value="Submit">Submit</button>
+        </div>
+    </div>
+    </form>    
+    
+
+{% endblock %}

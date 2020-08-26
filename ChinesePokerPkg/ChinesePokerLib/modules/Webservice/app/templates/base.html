@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+    <head>
+      {% if title %}
+      <title>ChinesePokerTips - {{ title }}</title>
+      {% else %}
+      <title>Welcome to ChinesePokerTips</title>
+      {% endif %}
+      <style>
+      a:hover, a:active {
+        color: orange;
+      }
+
+      .navbar-full {
+        display: grid;
+        grid-template-columns: 1fr repeat(5, minmax(auto, 150px)) 1fr;
+        grid-template-rows: 30px 5px;
+        grid-template-areas:
+          "space1 logo title home suggest play space2"
+          "sep sep sep sep sep sep sep";
+        text-align: center;
+      }
+      .navbar-main {
+        display: flex;
+        flex-direction: row;
+        height: 100px;
+        max-height: 0.15vw;
+
+      }
+      
+      #nav-logo {
+        grid-area: logo;
+        flex-grow: 1;
+      }
+      #nav-title {
+        grid-area: title;
+        flex-grow: 1;
+      }
+      #nav-home {
+        grid-area: home;
+        flex-grow: 1;
+      }
+      #nav-suggest {
+        grid-area: suggest;
+        flex-grow: 1;
+      }
+      #nav-play {
+        grid-area: play;
+        flex-grow: 1;
+      }
+      #nav-sep {
+        grid-area: sep;
+      }
+
+      </style>
+      {% block headblock %}{% endblock %}
+    </head>
+    <body>
+        <div class="navbar-full">
+          <div id="nav-logo">
+            Logo
+          </div>
+          <div id="nav-title">
+            ChinesePokerTips: 
+          </div>
+          
+          <div id="nav-home">
+            <a href="{{ url_for('index') }}">Home</a>
+          </div>
+          <div id="nav-suggest">
+            <a href="{{ url_for('suggest') }}">Pick</a>
+          </div>
+          <div id="nav-play">
+            <a href="{{ url_for('play_game') }}">Play</a>
+          </div>
+          <div id="nav-sep">
+            <hr>
+          </div>
+        </div>
+        
+        
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <ul>
+            {% for message in messages %}
+            <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% endwith %} 
+        {% block content %}{% endblock %}
+    </body>
+</html>

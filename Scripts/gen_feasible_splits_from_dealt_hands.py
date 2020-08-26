@@ -4,7 +4,7 @@ import sys
 from timeit import default_timer as timer
 
 from ChinesePokerLib.classes.StrategyClass import ChinesePokerPctileScoreStrategyClass
-from ChinesePokerLib.classes.DataClass import DataClass
+import ChinesePokerLib.modules.DataFunctions as DF
 
 from ChinesePokerLib.modules.SlackFunctions import post_message_to_slack_channel
 
@@ -12,11 +12,10 @@ import ChinesePokerLib.vars.GlobalConstants as GlobC
 
 
 def main(start_game_id, end_game_id, send_slack_update=True):
-  data_obj = DataClass()
 
   strategy = ChinesePokerPctileScoreStrategyClass()
 
-  deal_split_gen = data_obj.yield_splits_from_dealt_hands(strategy, start_game_id, end_game_id, from_db=True)
+  deal_split_gen = DF.yield_splits_from_dealt_hands(strategy, start_game_id, end_game_id)
   start = timer()
   if send_slack_update:
     msg =  'gen_feasible_splits_from_dealt_hands.py:\n' + \
@@ -33,7 +32,7 @@ def main(start_game_id, end_game_id, send_slack_update=True):
     game_id, splits_data = next(deal_split_gen, (None, None))
     if game_id is None:
       break
-    data_obj.write_splits_data_to_db(game_id, splits_data)
+    DF.write_splits_data_to_db(game_id, splits_data)
     min_elapsed = (timer()-start) / 60
     print (f'GameID {game_id} - total {min_elapsed} min_elapsed')
     

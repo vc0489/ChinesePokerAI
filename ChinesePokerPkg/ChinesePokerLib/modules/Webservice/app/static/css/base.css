@@ -1,0 +1,52 @@
+* {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+a:hover, a:active {
+  color: orange;
+}
+
+.navbar-full {
+  display: grid;
+  grid-template-columns: 1fr repeat(5, minmax(auto, 150px)) 1fr;
+  grid-template-rows: 30px 5px;
+  grid-template-areas:
+    "space1 logo title home suggest play space2"
+    "sep sep sep sep sep sep sep";
+  text-align: center;
+}
+.navbar-main {
+  display: flex;
+  flex-direction: row;
+  height: 100px;
+  max-height: 0.15vw;
+
+}
+
+#nav-logo {
+  grid-area: logo;
+  flex-grow: 1;
+}
+#nav-title {
+  grid-area: title;
+  flex-grow: 1;
+}
+#nav-home {
+  grid-area: home;
+  flex-grow: 1;
+}
+#nav-suggest {
+  grid-area: suggest;
+  flex-grow: 1;
+}
+#nav-play {
+  grid-area: play;
+  flex-grow: 1;
+}
+#nav-sep {
+  grid-area: sep;
+}
+
+.bottom-bar {
+  text-align: center;
+}

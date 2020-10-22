@@ -1,0 +1,346 @@
+
+  :root {
+    --USER-colour: rgb(0,128,0, 0.2);
+    --COM-colour: rgb(255, 165, 0, 0.2);
+  }
+  
+  .status-bar {
+    font-size: 2em;
+    background-color: lightgrey;
+  }
+
+  .status-text {
+    color: red;
+  }
+
+  .container {
+    display: grid;
+    grid-area: cards;
+    grid-template-columns: repeat(5, 35px);
+    grid-template-rows: repeat(3, 66px);
+    gap: 10px 5px;
+    width: 100%;
+    justify-items: center;
+    justify-content: center;
+  }
+  
+  .card {
+    width: 35px;
+    height: 66px;
+  }
+
+  #header0 {
+    grid-area: head0;
+    text-align: center;
+    width: 100%;
+  }
+
+  .header1 {
+    grid-area: head1;
+    text-align: center;
+    width: 100%;
+  }
+  
+  .header2 {
+    grid-area: head2;
+    text-align: center;
+    width: 100%;
+  }
+  
+  .header3 {
+    grid-area: head3;
+    text-align: center;
+    width: 100%;
+  }
+  
+  .full-container {
+    display: flex;
+    flex-wrap: wrap;
+
+  }
+
+  .flex-break {
+    flex-basis: 100%;
+    height: 0;
+  }
+
+  .player-dealt-cards-container {
+    height: 405px;
+    width: 480px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .player-dealt-cards-container .container-title h2 {
+    display: none;
+  }
+  .player-container {
+    display: grid; 
+    grid-template-columns: 240px 240px;
+    grid-template-rows: 55px repeat(4, 80px) 30px;
+    grid-template-areas: "title status"
+                         "pool pool"
+                         "head1 sets"
+                         "head2 sets"
+                         "head3 sets"
+                         "buttons buttons";
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  .full-container > div {
+    margin: 10px;
+  }
+
+  .COM-container {
+    background-color: var(--COM-colour);
+  }
+  
+  .USER-container {
+    background-color: var(--USER-colour);
+  }
+  
+  .container-title {
+    grid-area: title;
+  }
+
+  .container-status {
+    grid-area: status;
+    text-align: right;
+    padding-right: 5px;
+  }
+
+
+  .button-container {
+    width: 100%;
+    text-align: center;
+    display: flex;
+    flex-direction: row;
+  
+  }
+
+  #gameplay-button-container {
+    grid-area: buttons;
+    width: 100%;
+    height: 100%;
+    justify-content: space-around;
+  }
+  
+  /*
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  align-items: center;
+  */
+
+  .set-container-full {
+    grid-area: sets;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    align-items: flex-end;
+    justify-content: space-evenly;
+  }
+  
+  .container-pool {
+    grid-area: pool;
+    display: flex;
+    flex-direction: row;
+    border-style: dashed;
+    width: 465px;
+    height: 70px;
+    align-items: center;
+    justify-content: center;
+    justify-self: flex-end;
+  }
+
+  .set-container-3cards {
+    display: flex;
+    flex-direction: row;
+    border-style: dashed;
+    width: 110px;
+    height: 70px;
+    align-items: center;
+    justify-content: center;
+  }
+  .set-container-5cards {
+    display: flex;
+    flex-direction: row;
+    border-style: dashed;
+    width: 180px;
+    height: 70px;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  table {
+    border-collapse: collapse;
+  }
+
+  table tr td {
+    text-align: center;
+    border: 1px solid black;
+  }
+
+  #high-score-table-section td {
+    padding: 5px;
+  }
+  /* Score section */
+  .score-section {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .player-score-entry {
+    background-color: var(--USER-colour);
+  }
+  #score-table {
+    display: none;
+    width: 600px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+  }
+  /*
+  #score-table tr td {
+    text-align: center;
+    border: 1px solid black;
+  }
+   */
+
+  .table-unit {
+    width: 60px;
+    height: 60px;
+  }
+
+  .table-height-unit {
+    height: 60px;
+  }
+
+  .table-width-unit {
+    width: 60px;
+  }
+
+  /* START hand ranks example START */
+  .hand-ranks-example img {
+    width: 16px;
+    height: 33px;
+    cursor: default;
+    margin-left: -1px;
+    margin-right: -1px;
+  }
+  
+  #hand-rank-toggle {
+    color: blue;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  #hand-ranks-hover ol {
+    padding-inline-start: 20px;
+  }
+
+  #hand-ranks-hover {
+    position: fixed;
+    cursor: move;
+    display: none;
+    border-radius: 6px;
+    z-index: 1;
+    width: max-content;
+    padding: 15px;
+    background-color: darkblue;
+    color: #fff;
+    font-size: 12px;
+    left: 10%;
+    top: 10%;
+  }
+  
+
+  #hand-ranks-hover ol li {
+    margin: 5px 0;
+  }
+  
+
+
+  /* END hand ranks example END */
+  .row-USER > td.table-unit:not(.cell-black) {
+    background-color: var(--USER-colour);
+  }
+
+  .row-COM > td.table-unit:not(.cell-black) {
+    background-color: var(--COM-colour);
+  }
+  
+  td.cell-black {
+    background-color: black;
+  }
+
+  .cell-score-base {
+    font-size: 14px;
+    font-family: Arial, Helvetica, sans-serif;
+    border-bottom: 1px dotted black;
+    position: relative;
+  }
+  
+  .cell-score-tot {
+    font-size: 16px;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+
+  .cell-heading-base {
+    font-size: 14px;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+
+  .cell-heading-large {
+    font-size: 16px;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+  .cell-score-base > div.score-cell-hover {
+    visibility: hidden;
+    border-radius: 6px;
+    position: absolute;
+    z-index: 1;
+    top: 75%;
+    left: -75%;
+    width: max-content;
+    padding: 10px;
+    background-color: darkblue;
+    color: #fff;
+    font-size: 12px;
+  }
+  
+  div.score-cell-hover table tr td {
+    padding-left: 5px;
+    padding-right: 5px;
+  }
+  .cell-score-base:hover > div.score-cell-hover {
+    visibility: visible;
+  }
+
+  #button-submit {
+    display: none;
+  }
+
+  /* Hall of fame/submit section
+  */
+  #submit-score-section {
+    display: none;
+    margin-top: 20px;
+    margin-bottom: 20px;
+  }
+
+  .end-game-stats {
+    font-weight: bold;
+  }
+  
+  .high-score-table-title {
+    font-weight: bold;
+  }
+
+  #high-score-table-section {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    display: none;
+  }

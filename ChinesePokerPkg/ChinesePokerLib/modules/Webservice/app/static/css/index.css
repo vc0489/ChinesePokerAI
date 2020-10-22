@@ -1,0 +1,17 @@
+.card {
+  width: 16px;
+  height: 33px;
+  margin-left: -1px;
+  margin-right: -1px;
+}
+
+#main-content {
+  max-width: 45em;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  margin-left: auto;
+  margin-right: auto;
+}
+table {
+  margin-left: 20px;
+}

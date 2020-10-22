@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from 'macros.html' import displayCardSet %}
 
 {% block headblock %}
 <style>
@@ -16,12 +17,15 @@
 
 {% block content %}
     <h1>Cards in Hand: </h1>
+    {{ displayCardSet(sel_card_img_filenames) }}
+    <!--
     {% for suit_list in sel_card_img_filenames %}
         {% for img_info in suit_list %}
             <img src="/static/CardImages/{{ img_info[0] }}.png", width="35", height="66", title="{{ img_info[1] }}">
         {% endfor %}
         <br>
     {% endfor %}
+    -->
     <hr>
     <h1>Suggested Splits: </h1>
     <table>

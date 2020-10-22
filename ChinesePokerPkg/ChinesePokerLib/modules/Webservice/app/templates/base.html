@@ -6,62 +6,19 @@
       {% else %}
       <title>Welcome to ChinesePokerTips</title>
       {% endif %}
-      <style>
-      a:hover, a:active {
-        color: orange;
-      }
-
-      .navbar-full {
-        display: grid;
-        grid-template-columns: 1fr repeat(5, minmax(auto, 150px)) 1fr;
-        grid-template-rows: 30px 5px;
-        grid-template-areas:
-          "space1 logo title home suggest play space2"
-          "sep sep sep sep sep sep sep";
-        text-align: center;
-      }
-      .navbar-main {
-        display: flex;
-        flex-direction: row;
-        height: 100px;
-        max-height: 0.15vw;
-
-      }
       
-      #nav-logo {
-        grid-area: logo;
-        flex-grow: 1;
-      }
-      #nav-title {
-        grid-area: title;
-        flex-grow: 1;
-      }
-      #nav-home {
-        grid-area: home;
-        flex-grow: 1;
-      }
-      #nav-suggest {
-        grid-area: suggest;
-        flex-grow: 1;
-      }
-      #nav-play {
-        grid-area: play;
-        flex-grow: 1;
-      }
-      #nav-sep {
-        grid-area: sep;
-      }
-
-      </style>
+      <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
       {% block headblock %}{% endblock %}
     </head>
     <body>
         <div class="navbar-full">
+          <!--
           <div id="nav-logo">
             Logo
           </div>
+          -->
           <div id="nav-title">
-            ChinesePokerTips: 
+            ChinesePokerTips 
           </div>
           
           <div id="nav-home">
@@ -79,6 +36,7 @@
         </div>
         
         
+        <!--
         {% with messages = get_flashed_messages() %}
         {% if messages %}
         <ul>
@@ -88,6 +46,18 @@
         </ul>
         {% endif %}
         {% endwith %} 
+        -->
         {% block content %}{% endblock %}
+        
+        <div class="bottom-bar">
+          <hr>
+          <p>
+            Any questions, suggestions or feedback? Send a message to <a href = "mailto:chinesepokertips@gmail.com">chinesepokertips@gmail.com</a>.
+          </p>  
+          <p>
+            Unfortunately, this site has not been optimised for mobile devices yet, hopefully not for long though!
+          </p>
+        </div>
+
     </body>
 </html>

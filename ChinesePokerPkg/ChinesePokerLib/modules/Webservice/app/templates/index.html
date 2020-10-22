@@ -1,10 +1,132 @@
 {% extends "base.html" %}
 
+{% block headblock %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+{% endblock %}
 {% block content %}
+    <div id="main-content">
+    Welcome to ChinesePokerTips - where machine learning meets Chinese poker!
+    
+    <p>
+    <a href="https://en.wikipedia.org/wiki/Chinese_poker">Chinese poker</a> is a card game based on <a href="https://en.wikipedia.org/wiki/List_of_poker_hands">poker hand rankings</a> for two to four players.
+    In a round of Chinese poker, each player has to split their 13 cards face down into three sets - a "front" set of three, a "middle" set of five and a "back" set of five.
+    The only restriction of the split is that the sets from front to back have to increase in rank.
+    </p>
+    
+    <p>
+    For example this is a valid split:
+    <table>
+        <tr>
+            <td>
+                Front (One Pair, Kings):
+            </td>
+            <td>
+                <img class="card" src="/static/CardImages/KingHeartsSmall.png">
+                <img class="card" src="/static/CardImages/KingClubsSmall.png">
+                <img class="card" src="/static/CardImages/TwoClubsSmall.png">
+            </td>
+        </tr>
+    <tr>
+        <td>
+            Middle (Nine-high Straight):
+        </td>
+        <td>
+            <img class="card" src="/static/CardImages/NineDiamondsSmall.png">
+            <img class="card" src="/static/CardImages/EightSpadesSmall.png">
+            <img class="card" src="/static/CardImages/SevenSpadesSmall.png">
+            <img class="card" src="/static/CardImages/SixHeartsSmall.png">
+            <img class="card" src="/static/CardImages/FiveClubsSmall.png">
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Back (Full House, Jacks full):
+        </td>
+        <td>
+            <img class="card" src="/static/CardImages/JackSpadesSmall.png">
+            <img class="card" src="/static/CardImages/JackHeartsSmall.png">
+            <img class="card" src="/static/CardImages/JackDiamondsSmall.png">
+            <img class="card" src="/static/CardImages/FourHeartsSmall.png">
+            <img class="card" src="/static/CardImages/FourClubsSmall.png">
+        </td>
+    </tr>
+    </table>
+    </p>
+    
+    <p>
+    This is not a valid split because the middle set is higher in rank than the back set:
+    <table>
+        <tr>
+            <td>
+                Front (Ace-jack-high):
+            </td>
+            <td>
+                <img class="card" src="/static/CardImages/AceDiamondsSmall.png">
+                <img class="card" src="/static/CardImages/JackSpadesSmall.png">
+                <img class="card" src="/static/CardImages/FourClubsSmall.png">
+            </td>
+        </tr>
+    <tr>
+        <td>
+            Middle (Queen-Ten-high Flush):
+        </td>
+        <td>
+            <img class="card" src="/static/CardImages/QueenDiamondsSmall.png">
+            <img class="card" src="/static/CardImages/TenDiamondsSmall.png">
+            <img class="card" src="/static/CardImages/NineDiamondsSmall.png">
+            <img class="card" src="/static/CardImages/SevenDiamondsSmall.png">
+            <img class="card" src="/static/CardImages/ThreeDiamondsSmall.png">
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Back (Two Pairs, Kings and Twos):
+        </td>
+        <td>
+            <img class="card" src="/static/CardImages/KingHeartsSmall.png">
+            <img class="card" src="/static/CardImages/KingClubsSmall.png">
+            <img class="card" src="/static/CardImages/TwoSpadesSmall.png">
+            <img class="card" src="/static/CardImages/TwoClubsSmall.png">
+            <img class="card" src="/static/CardImages/FiveHeartsSmall.png">
+        </td>
+    </tr>
+    </table>
+    </p>
+
+    <p>
+    After all players have split their cards, the hands are revealed and the splits are compared set-by-set to determine the score.
+    The front sets are compared against each other, the middle sets compared against each other and so on.
+    In each comparison, the player with the stronger set gain a point from the player with the weaker set.
+    If sets are equally ranked, no points are exchanged.
+    Depending on the game variant, additional points may be awarded for other reasons such as winning all sets against an opponent or for a special hand like having all flushes.
+    </p>
+
+    <p>
+    The ChinesePokerTips <a href="{{ url_for('play_game') }}">game</a> uses the 1-6 scoring method in which three bonus points (on top of the three points from set-by-set comparison) are awarded to a player for winning all three sets against an opponent.
+    The opponent who lost all three sets will have three points deducted and ends up with negative six points from the head-to-head.
+    No other bonuses are awarded here and hence the sum of all player scores is always zero.
+    </p>
+    
+    <p>
+    I have trained a gradient boosting regression model which takes in a hand of cards split into the three sets and outputs a quantity representing its overall strength.
+    This model is used to power the AI in the game.
+    In the near future, some of the game engine functionality will be made available via an API for any interested developers to use.
+    </p>
+
+    <p>
+    Want some suggestions on how to split your cards? Head over to <a href="{{ url_for('suggest') }}">Pick</a>!
+    Want to test your skill at choosing the perfect split? Head over to <a href="{{ url_for('play_game') }}">Play</a>!
+    Good luck and have fun!
+    </p>
+    
+    
+    </div>
+    <!--
     <h1>Hello, {{ user.username }}!</h1>
 
     <h2>Recent hand queries:</h2>
     {% for query in hand_queries %}
     <div><p>{{ query.cards }}</b></p></div>
     {% endfor %}
+    -->
 {% endblock %}

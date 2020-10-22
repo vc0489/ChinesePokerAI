@@ -7,6 +7,7 @@ import json
 from deprecated import deprecated
 import random
 
+
 from ChinesePokerLib.classes.DeckClass import DeckClass
 from ChinesePokerLib.classes.CardClass import CardClass
 import ChinesePokerLib.modules.DBFunctions as DBF
@@ -93,6 +94,18 @@ def yield_dealt_hands_from_db(
   db_load_batch_size=1000,
   cards_as_str=False,
 ):
+  """Generator that yields dealt cards from DB one game at a time for a range of GameIDs.
+
+  Args:
+      start_game_no (int): Start game number.
+      end_game_no (int): End game number.
+      db_connector ([type], optional): [description]. Defaults to None.
+      db_load_batch_size (int, optional): [description]. Defaults to 1000.
+      cards_as_str (bool, optional): Return cards as string rather then CardClass objects. Defaults to False.
+
+  Yields:
+      [type]: [description]
+  """
   dealt_hands_table = GameC.CHINESE_POKER_db_consts["dealt_hands_table"]
   base_query = f'SELECT GameID, DealtHandsStr FROM {dealt_hands_table} WHERE GameID BETWEEN %s AND %s'
   #deck_obj = DeckClass()
@@ -178,16 +191,14 @@ def yield_splits_from_dealt_hands(
   start_game_id=None, 
   end_game_id=None, 
   verbose=False,
-  dealt_hands_text_file=None, 
 ):
-  """[summary]
+  """Gets dealt hands from DB then uses strategy to generate all splits
 
   Args:
       strategy ([type]): Strategy used to generate splits on hands via .gen_all_splits
       start_game_id (int, optional): Generate splits starting from this GameID. Defaults to None.
       end_game_id (int, optional): Generate splits up to this GameID. Defaults to None.
       verbose (bool, optional): [description]. Defaults to False.
-      dealt_hands_text_file ([type], optional): [description]. Defaults to None.
 
   Yields:
       [type]: [description]
@@ -313,6 +324,15 @@ def write_splits_data_to_db(game_id, splits_data):
   return
 
 def _convert_card_inds_to_set_inds_str(card_inds, n_cards=13):
+  """Convert List of card ind lists to single split string (of 1,2,3) to store in DB
+
+  Args:
+      card_inds ([type]): [description]
+      n_cards (int, optional): [description]. Defaults to 13.
+
+  Returns:
+      [type]: [description]
+  """
   if not n_cards:
     n_cards = sum([len(card_set) for card_set in card_inds])
   
@@ -334,13 +354,76 @@ def _convert_split_str_to_split_cards(
   n_sets = max(card_set_inds)+1
   
   card_sets = [[] for _ in range(n_sets)]
+  card_inds = [[] for _ in range(n_sets)]
 
   for cI, card in enumerate(cards):
     card_sets[card_set_inds[cI]].append(card)
-  
+    card_inds[card_set_inds[cI]].append(cI)
   card_sets = [tuple(card_set) for card_set in card_sets]
 
-  return card_sets
+  return card_sets, card_inds
+
+def get_splits_data_for_single_game_and_seat_from_db(
+  game_id, seat_id, cards=None,
+):
+  """[summary]
+
+  Args:
+      game_id (int): GameID
+      seat_id (int): Between 1 and 4
+      cards (List): List of CardClass objects or card strings. 
+  """
+
+  if cards is None:
+    hands = next(yield_dealt_hands_from_db(game_id, game_id))[1]
+    cards = hands[seat_id-1]
+  elif isinstance(cards[0], str):
+    deck = DeckClass()
+    cards = deck.deal_custom_hand(cards)
+
+  splits_table = GameC.CHINESE_POKER_db_consts['splits_table']
+  codes_table = GameC.CHINESE_POKER_db_consts['split_codes_table']
+  query = f'SELECT SplitSeqNo, SplitStr, + ' \
+          f'c1.L1Code AS S1L1Code, c1.L2Code AS S1L2Code, c1.L3Code AS S1L3Code, c1.L4Code AS S1L4Code, c1.L5Code AS S1L5Code, c1.L6Code AS S1L6Code, ' + \
+          f'c2.L1Code AS S2L1Code, c2.L2Code AS S2L2Code, c2.L3Code AS S2L3Code, c2.L4Code AS S2L4Code, c2.L5Code AS S2L5Code, c2.L6Code AS S2L6Code, ' + \
+          f'c3.L1Code AS S3L1Code, c3.L2Code AS S3L2Code, c3.L3Code AS S3L3Code, c3.L4Code AS S3L4Code, c3.L5Code AS S3L5Code, c3.L6Code AS S3L6Code ' + \
+          f'FROM {splits_table} s ' + \
+          f'JOIN {codes_table} c1 ON s.SplitID=c1.SplitID ' + \
+          f'JOIN {codes_table} c2 ON s.SplitID=c2.SplitID ' + \
+          f'JOIN {codes_table} c3 ON s.SplitID=c3.SplitID ' + \
+          f'WHERE s.GameID={game_id} AND s.SeatID={seat_id} ' + \
+          f'AND c1.SetNo=1 AND c2.SetNo=2 AND c3.SetNo=3'
+  db_output, _ = DBF.select_query(query)
+  hand_splits = []
+  for row in db_output:
+    split_seq_no, split_str, s1c1,s1c2,s1c3,s1c4,s1c5,s1c6, s2c1,s2c2,s2c3,s2c4,s2c5,s2c6, s3c1,s3c2,s3c3,s3c4,s3c5,s3c6 = row
+
+    split_cards, split_inds = _convert_split_str_to_split_cards(cards, split_str)
+    s1code = [s1c1, s1c2, s1c3, s1c4, s1c5, s1c6]
+    s2code = [s2c1, s2c2, s2c3, s2c4, s2c5, s2c6]
+    s3code = [s3c1, s3c2, s3c3, s3c4, s3c5, s3c6]
+
+    s1code = CardGroupCode([code for code in s1code if code is not None])
+    s2code = CardGroupCode([code for code in s2code if code is not None])
+    s3code = CardGroupCode([code for code in s3code if code is not None])
+    
+    split_info_factory = ChinesePokerStrategyClass.ranked_split_info_factory
+
+    split_info = split_info_factory(
+      split_inds,
+      split_cards,
+      (s1code, s2code, s3code),
+      None,
+      None,
+      None,
+      None,
+      None,
+      split_seq_no,
+    )
+    hand_splits.append(split_info)  
+  
+  hand_splits = sorted(hand_splits, key=lambda x: x.SeqNo)
+  return hand_splits
 
 def yield_splits_data_from_db(
   start_game_id = None,
@@ -348,25 +431,30 @@ def yield_splits_data_from_db(
 ):
 
   #db_connector = DBF.connect_to_db()
-  splits_table = GameC.CHINESE_POKER_db_consts['splits_table']
-  codes_table = GameC.CHINESE_POKER_db_consts['split_codes_table']
-  base_query = f'SELECT SplitSeqNo, SplitStr, + ' \
-                f'c1.L1Code AS S1L1Code, c1.L2Code AS S1L2Code, c1.L3Code AS S1L3Code, c1.L4Code AS S1L4Code, c1.L5Code AS S1L5Code, c1.L6Code AS S1L6Code, ' + \
-                f'c2.L1Code AS S2L1Code, c2.L2Code AS S2L2Code, c2.L3Code AS S2L3Code, c2.L4Code AS S2L4Code, c2.L5Code AS S2L5Code, c2.L6Code AS S2L6Code, ' + \
-                f'c3.L1Code AS S3L1Code, c3.L2Code AS S3L2Code, c3.L3Code AS S3L3Code, c3.L4Code AS S3L4Code, c3.L5Code AS S3L5Code, c3.L6Code AS S3L6Code ' + \
-                f'FROM {splits_table} s ' + \
-                f'JOIN {codes_table} c1 ON s.SplitID=c1.SplitID ' + \
-                f'JOIN {codes_table} c2 ON s.SplitID=c2.SplitID ' + \
-                f'JOIN {codes_table} c3 ON s.SplitID=c3.SplitID ' + \
-                f'WHERE s.GameID=%s AND s.SeatID=%s ' + \
-                f'AND c1.SetNo=1 AND c2.SetNo=2 AND c3.SetNo=3'
+  #splits_table = GameC.CHINESE_POKER_db_consts['splits_table']
+  #codes_table = GameC.CHINESE_POKER_db_consts['split_codes_table']
+  #base_query = f'SELECT SplitSeqNo, SplitStr, + ' \
+  #              f'c1.L1Code AS S1L1Code, c1.L2Code AS S1L2Code, c1.L3Code AS S1L3Code, c1.L4Code AS S1L4Code, c1.L5Code AS S1L5Code, c1.L6Code AS S1L6Code, ' + \
+  #              f'c2.L1Code AS S2L1Code, c2.L2Code AS S2L2Code, c2.L3Code AS S2L3Code, c2.L4Code AS S2L4Code, c2.L5Code AS S2L5Code, c2.L6Code AS S2L6Code, ' + \
+  #              f'c3.L1Code AS S3L1Code, c3.L2Code AS S3L2Code, c3.L3Code AS S3L3Code, c3.L4Code AS S3L4Code, c3.L5Code AS S3L5Code, c3.L6Code AS S3L6Code ' + \
+  #              f'FROM {splits_table} s ' + \
+  #              f'JOIN {codes_table} c1 ON s.SplitID=c1.SplitID ' + \
+  #              f'JOIN {codes_table} c2 ON s.SplitID=c2.SplitID ' + \
+  #              f'JOIN {codes_table} c3 ON s.SplitID=c3.SplitID ' + \
+  #              f'WHERE s.GameID=%s AND s.SeatID=%s ' + \
+  #              f'AND c1.SetNo=1 AND c2.SetNo=2 AND c3.SetNo=3'
+
   for game_id in range(start_game_id, end_game_id+1):
     hands = next(yield_dealt_hands_from_db(game_id, game_id))[1]
     game_splits = []
 
     for seat_id in range(1,5):
-      query = base_query  % (game_id, seat_id)
+      
+      #query = base_query  % (game_id, seat_id)
       cards = hands[seat_id-1]
+      hand_splits = get_splits_data_for_single_game_and_seat_from_db(game_id, seat_id, cards)
+      
+      """
       db_output, _ = DBF.select_query(query)
       
       hand_splits = []
@@ -396,7 +484,7 @@ def yield_splits_data_from_db(
           split_seq_no,
         )
         hand_splits.append(split_info)
-      
+      """
       game_splits.append(hand_splits)
     
     yield game_id, game_splits
@@ -435,7 +523,32 @@ def load_game_setup(game_id, hand_no):
   
   return dealt_cards[hand_no-1:] + dealt_cards[:hand_no-1]
   
-  
+
+def _get_split(game_id, seat_id, split_seq_no):
+  splits_table = GameC.CHINESE_POKER_db_consts['splits_table']
+  query = f'SELECT SplitStr FROM {splits_table} WHERE GameID={game_id} AND SeatID={seat_id} AND SplitSeqNo={split_seq_no}'
+  db_output, _ = DBF.select_query(query)
+  return db_output[0][0]
+
+def fetch_random_feasible_split_for_game_and_seat(game_id, seat_id, inds_only=True):
+
+  # TODO get code as well
+  n_feasible_splits = number_of_feasible_splits_for_game_and_seat(game_id, seat_id)
+
+  random_split = random.randint(1, n_feasible_splits)
+  split_str = _get_split(game_id, seat_id, random_split)
+  split_set_inds = [int(c) for c in split_str]
+  print(f'split_set_inds: {split_set_inds}')
+  n_sets = max(split_set_inds)
+  set_inds = [[] for _ in range(n_sets)]
+  if inds_only:
+    for card_ind,set_ind in enumerate(split_set_inds):
+      set_inds[set_ind-1].append(card_ind)
+    return set_inds, random_split
+  else:
+    raise NotImplementedError('VC: Not implemented yet.')
+
+
 ##########################################
 ### START Useful query functions START ###
 ##########################################
@@ -448,7 +561,13 @@ def max_game_id_in_splits_table():
 
   return db_output[0][0]
 
+def number_of_feasible_splits_for_game_and_seat(game_id, seat_id):
 
+  splits_table = GameC.CHINESE_POKER_db_consts['splits_table']
+  query = f'SELECT Max(SplitSeqNo) FROM {splits_table} WHERE GameID={game_id} AND SeatID={seat_id}'
+  db_output, _ = DBF.select_query(query)
+
+  return db_output[0][0]
 ######################################
 ### END Useful query functions END ###
 ######################################

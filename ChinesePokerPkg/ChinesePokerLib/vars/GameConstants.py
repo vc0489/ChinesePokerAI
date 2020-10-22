@@ -7,6 +7,7 @@ import glob
 import re
 from datetime import datetime
 import pathlib
+import numpy as np
 
 import ChinesePokerLib.modules.DBFunctions as DBF
 
@@ -159,3 +160,38 @@ CHINESE_POKER_db_consts = {
 ### END DB related constants END ###
 ####################################
 
+##############################################
+### START Strategy related constants START ###
+##############################################
+# Key = strategyID
+CHINESE_POKER_strategy_constants = {
+  3: {
+    'ScoreThresholdsByComDifficulty': [# (Difficulty, Game score threshold)
+      [  0, 12.000],
+      [  5, 3.5203],
+      [ 10, 2.9522],
+      [ 15, 2.6029],
+      [ 20, 2.3213],
+      [ 25, 2.0811],
+      [ 30, 1.8887],
+      [ 35, 1.7213],
+      [ 40, 1.5711],
+      [ 45, 1.4249],
+      [ 50, 1.2861],
+      [ 55, 1.1543],
+      [ 60, 1.0146],
+      [ 65, 0.8698],
+      [ 70, 0.7276],
+      [ 75, 0.5687],
+      [ 80, 0.4043],
+      [ 85, 0.2313],
+      [ 90, 0.1044],
+      [ 95, 0.0261],
+      [100, 0.0000],
+    ]
+  }
+}
+
+##########################################
+### END Strategy related constants END ###
+##########################################

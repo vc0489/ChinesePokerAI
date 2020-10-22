@@ -1,50 +1,326 @@
 {% extends "base.html" %}
+{% from 'macros.html' import displayCardSet %}
 
 {% block headblock %}
-<style>
-    table, th, td {
-      border: 1px solid black;
-      border-collapse: collapse;
-    }
 
-    a:visited {
-        color: blue;
-        text-decoration: underline
-    }
-</style>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/game.css') }}">
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<!--Needed for sortable-->
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+<!-- Not needed
+<script src="{{ url_for('static', filename='jquery.ui.swappable.js') }}"></script>
+-->
+
+<script src="{{ url_for('static', filename='js/game.js') }}"></script>
+
+
 {% endblock %}
 
 {% block content %}
-    <h1>Cards Dealt: </h1>
-    {% for suit_list in dealt_img_filenames %}
-        {% for img_info in suit_list %}
-            <img src="/static/CardImages/{{ img_info[0] }}.png", width="35", height="66", title="{{ img_info[1] }}">
-        {% endfor %}
-        <br>
-    {% endfor %}
-    <hr>
-    <h1>Suggested Splits: </h1>
-    <table>
-        <tr>
-            <th>Split</th>
-            <th>Set 1</th>
-            <th>Set 2</th>
-            <th>Set 3</th> 
-            <th></th>
-        </tr>
+<!--Not used anymore: {{ displayCardSet(dealt_cards_img_filenames_full) }}-->
+
+  <div class="status-bar">Status: <span class="status-text">Dealing cards</span></div>
+
+
+<!--Postgame score table-->
+<div class="score-section">
+  <table id="score-table">
+    <tr>
+      <td class="cell-heading-large" rowspan=2 colspan=2>Scoreboard</td>
+      <td class="cell-heading-large table-height-unit" colspan=4>Opponent</td>
+      <td class="table-unit"></td>
+      <td class="table-height-unit cell-heading-large" colspan=2>Total</td>
+    </tr>
+    <tr>
+      <td class="table-unit cell-heading-base">You</td>
+      <td class="table-unit cell-heading-base">COM1</td>
+      <td class="table-unit cell-heading-base">COM2</td>
+      <td class="table-unit cell-heading-base">COM3</td>
+      <td class="table-unit"></td>
+      <td class="table-unit cell-heading-large">Game</td>
+      <td class="table-unit cell-heading-large">Overall</td>
+    </tr>
+    <tr class="score-row row-USER"> <!-- 3rd <tr> child-->
+      <td rowspan=4 class="cell-heading-large table-width-unit">Player</td>
+      <td class="table-unit cell-heading-base">You</td>
+      <td class="table-unit cell-black"></td>
+      <td class="table-unit cell-score-base"></td>
+      <td class="table-unit cell-score-base"></td>
+      <td class="table-unit cell-score-base"></td>
+      <td class="table-unit"></td>
+      <td class="table-unit cell-score-tot"></td>
+      <td class="table-unit cell-score-tot">0</td>
+    </tr>
+    <tr class="score-row row-COM">
+      <td class="table-unit cell-heading-base">COM1</td>
+      <td class="table-unit cell-score-base"></td>
+      <td class="table-unit cell-black"></td>
+      <td class="table-unit cell-score-base"></td>
+      <td class="table-unit cell-score-base"></td>
+      <td class="table-unit"></td>
+      <td class="table-unit cell-score-tot"></td>
+      <td class="table-unit cell-score-tot">0</td>
+    </tr>
+    <tr class="score-row row-COM">
+      <td class="table-unit cell-heading-base">COM2</td>
+      <td class="table-unit cell-score-base"></td>
+      <td class="table-unit cell-score-base"></td>
+      <td class="table-unit cell-black"></td>
+      <td class="table-unit cell-score-base"></td>
+      <td class="table-unit"></td>
+      <td class="table-unit cell-score-tot"></td>
+      <td class="table-unit cell-score-tot">0</td>
+    </tr>
+    <tr class="score-row row-COM">
+      <td class="table-unit cell-heading-base">COM3</td>
+      <td class="table-unit cell-score-base"></td>
+      <td class="table-unit cell-score-base"></td>
+      <td class="table-unit cell-score-base"></td>
+      <td class="table-unit cell-black"></td>
+      <td class="table-unit"></td>
+      <td class="table-unit cell-score-tot"></td>
+      <td class="table-unit cell-score-tot">0</td>
+    </tr>
+  </table>
+  <div id="com-sliders">
+    <div class="single-slider-container">
+      Computer ability (0=weakest, 100=strongest)
+      <br>
+      <label for="COM1-slider">COM1</label>
+      <input type="range" min="0" max="100" value="100" step=5 class="com-slider" id="COM1-slider">
+      <span>100</span>
+    </div>
+    <div class="single-slider-container">
+      <label for="COM2-slider">COM2</label>
+      <input type="range" min="0" max="100" value="100" step=5 class="com-slider" id="COM2-slider">
+      <span>100</span>
+    </div>
+    <div class="single-slider-container">
+      <label for="COM3-slider">COM3</label>
+      <input type="range" min="0" max="100" value="100" step=5 class="com-slider" id="COM3-slider">
+      <span>100</span>
+    </div>
+  </div>
+  <div class="button-container" id="postgame-button-container">
+    <div class="single-button-container">
+      <button id="button-new-game" type="button" disabled">New game</button>
+    </div>
+    <div class="single-button-container">
+      <button id="button-new-round" type="button" disabled>Next round</button>
+    </div>
+    <div class="single-button-container">
+      <button id="button-score-table-toggle" type="button" disabled>Show scores</button>
+    </div>
+    <div class="single-button-container">
+      <button id="button-end-game" type="button" disabled>End game</button>
+    </div>
+    <!--
+    <div class="single-button-container">
+      <button id="button-submit-score" type="button" disabled>Submit score</button>
+    </div>
+    -->
+
+    
+    <!--
+    <div class="single-button-container">
+      <button id="button-reset-scores" type="button" onclick="resetScores();">Reset scores</button>
+    </div>
+    -->
+  </div>
+</div>
+<div id="submit-score-section">
+  Your played <span class="end-game-stats" id="end-game-n-rounds"></span> rounds and averaged <span class="end-game-stats" id="end-game-avg-score"></span> PPR (points per round).
+  <br>
+  If you were a computer with 100 ability, you would have scored <span class="end-game-stats" id="end-game-pot-tot-score"></span> point(s) or <span class="end-game-stats" id="end-game-pot-avg-score"></span> PPR.
+  <br>
+  Your CPT score, the difference between the two PPRs, is <span class="end-game-stats" id="end-game-CPT-score"></span>.
+  <br>
+  <div id="end-game-no-score-submit">Play 10 rounds to submit your CPT score to the leaderboard.</div>
+  <div id="end-game-score-submit">
+    Submit your score to the leader board:
+  <form id="submit-score-form">
+    <label for="name">Name: </label>
+    <input type="text" name="name" id="submit-score-input-name" maxlength="50" required>
+
+    <label for="email">Email: </label>
+    <input type="email" name="email" id="submit-score-input-email">
+
+    <input type="submit" value="Submit Score">
+  </form>
+  </div>
+
+
+</div>
+<div id="high-score-table-section">
+  <h2>High scores:</h2>
+  <!--
+    Option to choose min games
+    Number of ranks to show
+
+    Rank Name Games Points/Games Date
+  -->
+  </div>
+  
+<div class="full-container">
+  
+  <div class="player-container USER-container" id="USER">
+    <!-- Card pool -->
+    <div class="container-title">
+      <h2>You</h2>
+    </div>
+    <div class="container-status">
+      <span id="hand-rank-toggle">Show hand ranks</span>
+      <div id="hand-ranks-hover" draggable="true">
+        <ol>
+          <li>
+            Straight Flush
+            <div class="hand-ranks-example">
+              <img src="/static/CardImages/AceSpadesSmall.png">
+              <img src="/static/CardImages/KingSpadesSmall.png">
+              <img src="/static/CardImages/QueenSpadesSmall.png">
+              <img src="/static/CardImages/JackSpadesSmall.png">
+              <img src="/static/CardImages/TenSpadesSmall.png">
+            </div>
+          </li>
+          <li>
+            Four of a Kind
+            <div class="hand-ranks-example">
+              <img src="/static/CardImages/QueenSpadesSmall.png">
+              <img src="/static/CardImages/QueenHeartsSmall.png">
+              <img src="/static/CardImages/QueenDiamondsSmall.png">
+              <img src="/static/CardImages/QueenClubsSmall.png">
+              <img src="/static/CardImages/FourHeartsSmall.png">
+            </div>
+          </li>
+          <li>
+            Full House
+            <div class="hand-ranks-example">
+              <img src="/static/CardImages/EightHeartsSmall.png">
+              <img src="/static/CardImages/EightDiamondsSmall.png">
+              <img src="/static/CardImages/EightClubsSmall.png">
+              <img src="/static/CardImages/JackSpadesSmall.png">
+              <img src="/static/CardImages/JackDiamondsSmall.png">
+            </div>
+          </li>
+          <li>
+            Flush
+            <div class="hand-ranks-example">
+              <img src="/static/CardImages/KingDiamondsSmall.png">
+              <img src="/static/CardImages/NineDiamondsSmall.png">
+              <img src="/static/CardImages/FiveDiamondsSmall.png">
+              <img src="/static/CardImages/FourDiamondsSmall.png">
+              <img src="/static/CardImages/TwoDiamondsSmall.png">
+            </div>
+          </li>
+          <li>
+            Straight
+            <div class="hand-ranks-example">
+              <img src="/static/CardImages/NineHeartsSmall.png">
+              <img src="/static/CardImages/EightClubsSmall.png">
+              <img src="/static/CardImages/SevenClubsSmall.png">
+              <img src="/static/CardImages/SixDiamondsSmall.png">
+              <img src="/static/CardImages/FiveSpadesSmall.png">
+            </div>
+          </li>
+          <li>
+            Three of a Kind
+            <div class="hand-ranks-example">
+              <img src="/static/CardImages/ThreeSpadesSmall.png">
+              <img src="/static/CardImages/ThreeDiamondsSmall.png">
+              <img src="/static/CardImages/ThreeClubsSmall.png">
+              <img src="/static/CardImages/KingClubsSmall.png">
+              <img src="/static/CardImages/SixHearts.png">
+            </div>
+          </li>
+          <li>
+            Two Pairs
+            <div class="hand-ranks-example">
+              <img src="/static/CardImages/FourDiamondsSmall.png">
+              <img src="/static/CardImages/FourClubsSmall.png">
+              <img src="/static/CardImages/ThreeHeartsSmall.png">
+              <img src="/static/CardImages/ThreeDiamondsSmall.png">
+              <img src="/static/CardImages/TenSpades.png">
+            </div>
+          </li>
+          <li>
+            One Pair
+            <div class="hand-ranks-example">
+              <img src="/static/CardImages/JackSpadesSmall.png">
+              <img src="/static/CardImages/JackClubsSmall.png">
+              <img src="/static/CardImages/QueenHeartsSmall.png">
+              <img src="/static/CardImages/TenSpadesSmall.png">
+              <img src="/static/CardImages/ThreeDiamondsSmall.png">
+            </div>
+          </li>
+          <li>
+            High Card
+            <div class="hand-ranks-example">
+              <img src="/static/CardImages/AceDiamondsSmall.png">
+              <img src="/static/CardImages/TenSpadesSmall.png">
+              <img src="/static/CardImages/NineHeartsSmall.png">
+              <img src="/static/CardImages/FiveHeartsSmall.png">
+              <img src="/static/CardImages/TwoClubsSmall.png">
+            </div>
+          </li>
+        </ol>
+      </div>
+    </div>
+    <div class="connected container-pool" id="card-pool">
+    </div>
+
+    <!-- Headers -->
+    <div class="header1">Front (3 cards)</div>
+    <div class="header2">Middle (5 cards)</div>
+    <div class="header3">Back (5 cards)</div>
+
+    <div class="set-container-full">
+      <div class="connected set-container-3cards" id="set1"></div>
+      <div class="connected set-container-5cards" id="set2"></div>
+      <div class="connected set-container-5cards" id="set3"></div>
+    </div>
+
+    <div class="button-container" id="gameplay-button-container">
+      <div class="single-button-container">
+        <button id="button-reset" type="button" onclick="resetCards();" disabled>Reset</button>
+      </div>
+      <div class="single-button-container">
+        <button id="button-random" type="button" onclick="randomSplit();" disabled>Random Split</button>
+      </div>
+      <div class="single-button-container">
+        <button id="button-submit" type="button" onclick="playHand();" disabled>Play Hand</button>
+      </div>
+    </div>
+  </div>
+  <div class="player-dealt-cards-container USER-container">
+    <div class="card-set">
+    </div>
+  </div>
+  <div class="flex-break"> <!--To force newline-->
+  </div>
+  <!--Add computer sets placeholder-->
+  {% for c in range(3) %}
+    <div class="player-container COM-container" id="COM{{ c+1 }}">
+      <div class="container-title">
+        <h2>Computer {{ c+1 }}</h2>
+      </div>
+      <div class="container-status">
         
-        {% for split in suggested_split_imgs %} 
-        <tr>
-            <th>Split {{ loop.index }}</th>
-            {% for img_str in split %}
-                <th>
-                    <img src="data:image/png;base64, {{ img_str }}", height="66">
-                </th>
-            {% endfor %}
-            <th>
-            <a href="{{ url_for('game_play_split', split_no=loop.index) }}">Play this set</a>
-            </th>
-        </tr>
-        {% endfor %}
-    </table>
+      </div>
+      <div class="container-pool" id="COM{{ c+1 }}-pool">
+      </div>
+
+      <!-- Headers -->
+      <div class="header1">Front</div>
+      <div class="header2">Middle</div>
+      <div class="header3">Back</div>
+
+      <div class="set-container-full">
+        <div class="connected set-container-3cards" id="COM{{ c+1 }}-set1"></div>
+        <div class="connected set-container-5cards" id="COM{{ c+1 }}-set2"></div>
+        <div class="connected set-container-5cards" id="COM{{ c+1 }}-set3"></div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
 {% endblock %}

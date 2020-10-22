@@ -2,15 +2,18 @@
 """
 from collections import Counter
 from itertools import combinations, product, permutations
-from operator import attrgetter
+from operator import attrgetter, itemgetter
 import numpy as np
 import pandas as pd
 from deprecated import deprecated
 
+from ChinesePokerLib.classes.DeckClass import DeckClass
 from ChinesePokerLib.classes.CardClass import CardClass
 import ChinesePokerLib.vars.CardConstants as CConst
 import ChinesePokerLib.vars.GameConstants as GConst
 from ChinesePokerLib.classes.UtilityClasses import VarChecker
+from ChinesePokerLib.classes.ExceptionClasses import CardGroupClassError
+
 
 # Group classifications and Ranks
 # [1] Royal Flush
@@ -816,11 +819,85 @@ class CardGroupClassifier(BaseCardGroupClass):
   # [I3] Ace, Six, Three (3 card example)
   #     -- (9,0,8,11,-1,-1)
     return
-  def classify_card_group(self, cards):
-    #card_number_indices = self._get_number_indices(cards)
-    # card.number_strength_ind
+  
+  @classmethod
+  def _pluralise_number(cls, number):
+    if number.lower() == 'six':
+      number += 'es'
+    else:
+      number += 's'
+    return number
+
+  def classify_card_group(self, cards, sort_by_deck_card_ind=True):
+    """
+
+    Args:
+        cards ([type]): [description]
+
+    Raises:
+        CardGroupClassError: [description]
+
+    Returns:
+        [type]: [description]
+    """
+    set_size = len(cards)
     
-    return
+    if set_size not in (3,5):
+      raise CardGroupClassError('classify_card_group only supports groups of 3 or 5 cards.')
+
+    if isinstance(cards[0], str):
+      cards = DeckClass().deal_custom_hand(cards)
+    
+    # Sort by deck card ind
+    if sort_by_deck_card_ind:
+      sort_inds, _ = zip(*sorted(enumerate(cards), key=lambda x: x[1].deck_card_ind))
+      cards = [cards[ind] for ind in sort_inds]
+    else:
+      sort_inds = list(range(len(cards)))
+
+    output = self.find_n_card_set_codes(cards, set_size=set_size)
+    #print(output)
+    group_code = output[0][0]
+    
+    group_sorted_inds = [sort_inds[ind] for ind in output[0][2]]
+    return group_code, group_sorted_inds
+  
+  def get_code_description(self, code):
+    number_list = CConst.suit_number_strength_orders['STANDARD']['Numbers']
+    full_number_map = CConst.STANDARD_full_number_name_map
+
+    top_code = code.code[0]
+    if top_code == 1: # X-High Straight Flush
+      X = full_number_map[number_list[code.code[1]]]
+      desc = f'{X}-high Straight Flush'
+    elif top_code == 2: # Four of a Kind, Xs
+      X = self.__class__._pluralise_number(full_number_map[number_list[code.code[1]]])
+      desc = f'Four of a Kind, {X}'
+    elif top_code == 3: # Full House, Xs Full
+      X = self.__class__._pluralise_number(full_number_map[number_list[code.code[1]]])
+      desc = f'Full House, {X} full'
+    elif top_code == 4: # X-Y-high Flush
+      X = full_number_map[number_list[code.code[1]]]
+      Y = full_number_map[number_list[code.code[2]]]
+      desc = f'{X}-{Y}-high Flush'
+    elif top_code == 5: # X-high Straight
+      X = full_number_map[number_list[code.code[1]]]
+      desc = f'{X}-high Straight'
+    elif top_code == 6: # Three of a Kind, Xs
+      X = self.__class__._pluralise_number(full_number_map[number_list[code.code[1]]])
+      desc = f'Three of a Kind, {X}'
+    elif top_code == 7: # Two Pair, Xs and Ys
+      X = self.__class__._pluralise_number(full_number_map[number_list[code.code[1]]])
+      Y = self.__class__._pluralise_number(full_number_map[number_list[code.code[2]]])
+      desc = f'Two Pairs, {X} and {Y}'
+    elif top_code == 8: # One Pair, Xs
+      X = self.__class__._pluralise_number(full_number_map[number_list[code.code[1]]])
+      desc = f'One Pair, {X}'
+    elif top_code == 9: # X-Y-high
+      X = full_number_map[number_list[code.code[1]]]
+      Y = full_number_map[number_list[code.code[2]]]
+      desc = f'{X}-{Y}-high'
+    return desc
 
   def all_possible_set_codes(self, set_size=5, code_length=3, code_fill_val=-1, ret_tuples=False):
     """
@@ -1184,6 +1261,34 @@ class CardGroupCode(BaseCardGroupClass):
   def min_code_for_given_score(self, method='GreedyFromSet1Prctile', prctile_data=None, set_no=1):    
     if prctile_data == None:
       prctile_data = pd.read_csv(GConst.data_files_for_set_scoring[method])
+    return
+
+  
+  def get_ordered_cards(self, cards):
+    """[summary]
+
+    Args:
+        cards (list): List of CardClass objects
+    """
+    if self.code[0] == 1: # Straight flush - rank by number
+      pass
+    elif self.code[0] == 2: # Four of a kind - get group of 4, rank by suit
+      pass
+    elif self.code[0] == 3: # Full house - get group of 3, rank by suit, then rank pair by suit
+      pass
+    elif self.code[0] == 4: # Flush - rank by number
+      pass
+    elif self.code[0] == 5: # Straight - rank by number
+      pass
+    elif self.code[0] == 6: # Three of a kind - get group of 3, rank by suit, then rank by number
+      pass
+    elif self.code[0] == 7: # Two pairs - get pairs, rank by number, then suit
+      pass
+    elif self.code[0] == 8: # One pair - get pair, rank by suit, then rank remaining by number
+      pass
+    elif self.code[0] == 9: # High card - rank by number
+      pass
+    
     return
 #def _describe_chinese_poker_card_group(self):
 #  return

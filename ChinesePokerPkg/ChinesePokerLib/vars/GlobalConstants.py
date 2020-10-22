@@ -20,3 +20,5 @@ DEFAULT_SLACK_VARS = {
   'username':'Chokerot',
   'icon':'https://img.icons8.com/color/96/000000/cards.png'
 }
+
+SQL_DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'

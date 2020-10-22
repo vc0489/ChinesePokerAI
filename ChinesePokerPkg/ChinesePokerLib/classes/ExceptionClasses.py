@@ -78,3 +78,11 @@ class DBFunctionsError(Error):
 class DBWriteError(DBFunctionsError):
   """Raised when failure when trying to write to DB"""
   pass
+
+
+#################################
+### CardGroupClass Exceptions ###
+#################################
+class CardGroupClassError(Error):
+  """Base class for exceptions relating to CardGroupClass"""
+  

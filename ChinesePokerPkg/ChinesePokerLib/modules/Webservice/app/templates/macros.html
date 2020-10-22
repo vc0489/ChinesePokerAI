@@ -1,0 +1,10 @@
+{% macro displayCardSet(card_filenames) %}
+  <div class="card-set">
+    {% for suit_list in card_filenames %}
+      {% for img_info in suit_list %}
+          <img src="/static/CardImages/{{ img_info[0] }}.png", width="35", height="66", title="{{ img_info[1] }}">
+      {% endfor %}
+      <br>
+    {% endfor %}
+  </div>
+{% endmacro %}

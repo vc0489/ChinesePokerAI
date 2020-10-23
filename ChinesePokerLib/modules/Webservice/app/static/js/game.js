@@ -1,4 +1,36 @@
 
+/*
+TODO: Move utility functions elsewhere
+*/
+// Utility function 
+function roundDecimal(val, dps) {
+  return Math.round((val + Number.EPSILON) * Math.pow(10,dps)) / Math.pow(10,dps)
+}
+
+function sumArray(toSum) {
+  sum = toSum.reduce(function(a, b) {
+    return a + b;
+  });
+  return sum;
+}
+
+// Get client IP
+// https://ipdata.co/blog/how-to-get-the-ip-address-in-javascript/
+function getClientIp() {
+  let ipRequest = new Request(`https://www.cloudflare.com/cdn-cgi/trace`);
+  return fetch(ipRequest)
+    .then(function(response) {
+      return response.text()
+    })
+    .then(function(text) {
+      const ipRegex = /[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/;
+      clientIp = text.match(ipRegex)[0];
+    });
+}
+
+
+
+
 // Array to store computer splits
 var comSplitInfo = new Array(3);
 for (let cI=0; cI<3; cI++) {
@@ -9,40 +41,36 @@ for (let cI=0; cI<3; cI++) {
 }
 var playerSplitWithCom100;
 
-var randomSplitOutput;
 var allSplitDesc = new Array(4);
 for (let pI=0; pI<4; pI++) {
   allSplitDesc[pI] = new Array(3);
 }
 
-var cardIdPrefix;
 
-// Game variables
-var gameID;
-var seatID;
-var dealtCardImgFilesFull;
-var dealtCardImgFiles;
-var setCodes = ['()', '()', '()'];
+
+//----------------//
+// Game variables //
+//----------------//
+const setLengths = [3,5,5];        // Number of cards per set
+
+var gameID;                        // Stores hand GameID of current round
+var seatID;                        // Stores player seatID of current round
+var setCodes = ['()', '()', '()']; // Stores 
 var n_cards_in_set = [0, 0, 0];
-const setLengths = [3,5,5];
-var comDifficulty = [undefined, undefined, undefined];
+
+var comDifficulty = [undefined, undefined, undefined];  // Stores COM abilities
 var appGameID = undefined;
 var appRoundID = undefined;
-//var completedGameData = {
-//  'ComDifficulty': undefined,
-//  'GameScoreHistory': undefined,
-//  'HandHistory': undefined
-//}
 
-//var cumGameScores = [0, 0, 0, 0];
-var gameScoreHistory;
-var playerScoreHistoryCom100;
-var handHistory;
-var nRoundsPlayed; // Number of rounds played
+var gameScoreHistory;           // Stores score history - all players and rounds
+var playerScoreHistoryCom100;   // Stores what the player would have scored if playing as COM with 100 ability
+var handHistory;                // Stores GameID and (player) SeatID of all rounds
+var nRoundsPlayed;              // Number of rounds played counter
 
-//var firstGame = true;
 var handRankEl;
 var clientIp;
+var cardIdPrefix;
+
 // Initalise upon load
 window.onload = initialiseGame;
 
@@ -61,32 +89,27 @@ function initialiseGame() {
     url: '/get/initialise',
   }).done(function(response) {
     cardIdPrefix = response['CardIdPrefix'];
-    console.log('Initalisation successful');
     $( "#button-new-game" ).attr("disabled", false);
-    
-    
     updateStatus('Ready for new game', 'green');
   }).fail(function(xhr, textStatus, errorThrown) {
-    console.log('Error during initialisation');
+    alert('Error initialising game, please refresh');
   });
 
-
+  // Hand ranks hover toggle event
   handRankEl = document.getElementById("hand-ranks-hover");
+  document.getElementById("hand-rank-toggle").addEventListener("click", showHandRankToggle);
+
+  // Draggable events
   handRankEl.addEventListener('dragstart', dragStart, false);
   document.addEventListener('dragover', dragOver, false);
   document.addEventListener('drop', dropElement, false);
-  
-  document.getElementById("hand-rank-toggle").addEventListener("click", showHandRankToggle);
 
   // Add button event handlers
   document.getElementById("button-new-game").addEventListener("click", newGame);
   document.getElementById("button-new-round").addEventListener("click", newRound);
   document.getElementById("button-score-table-toggle").addEventListener("click", showScoreTableToggle);
-  //document.getElementById("button-submit-score").addEventListener("click", submitScore);
   document.getElementById("button-end-game").addEventListener("click", endGame);
-
   document.getElementById("submit-score-form").addEventListener("submit", submitScore);
-  
 
   // COM slider event handers
   for (let comId=1; comId<=3; comId++) {
@@ -94,32 +117,19 @@ function initialiseGame() {
   }
 }
 
-
-
 function newGame() {
-  /*
-  if (firstGame == true) {
-    firstGame = false;
-  } else {
-    res = confirm("This will reset all scores. Continue?");
-    if (res == false) {
-      return;
-    }
-  }
-  */
-
+  // Initialise some tracking variables
   gameScoreHistory = [[],[],[],[]];
   playerScoreHistoryCom100 = [];
   handHistory = [];
-
   nRoundsPlayed = 0;
+  
+  // Set up page
   resetScoreTable();
   clearAllCards();
   updateStatus("Press 'Next round' to play round 1", 'green');
-  
 
   $( "#button-new-game" ).attr("disabled", true);
-  
   $( "#button-score-table-toggle" ).attr("disabled", false);
   for (let comID=1; comID<=3; comID++) {
     $( "#COM" + comID.toString() + " .container-status" ).html('Ready!');
@@ -130,7 +140,8 @@ function newGame() {
   $( "#score-table" ).hide();
   $( "#submit-score-section" ).hide();
   $( "#high-score-table-section" ).hide();
-
+  
+  // Create game row in CPT_game DB table
   function createAppGameDbRow() {
     return new Promise((resolve, reject) => {
       $.ajax({
@@ -159,11 +170,8 @@ function newGame() {
 
 }
 
-function roundDecimal(val, dps) {
-  return Math.round((val + Number.EPSILON) * Math.pow(10,dps)) / Math.pow(10,dps)
-}
+
 function endGame() {
-  // Display some information (history?)
   // Clear cards
   // Show high score table
   // Option to submit score
@@ -173,11 +181,8 @@ function endGame() {
   $( "#score-table" ).show();
   for (let comID=1; comID<=3; comID++) {
     $( "#COM" + comID.toString() + " .container-status" ).html('zzz...');
-    
-    
     $( "#COM" + comID.toString() + "-slider" ).attr("disabled", false);
     document.getElementById( "COM" + comID.toString() + "-slider" ).value = comDifficulty[comID-1];
-    //comDifficulty[comID-1] = document.getElementById( "COM" + comID.toString() + "-slider" ).value;
   }
 
   $( "#button-new-game" ).attr("disabled", false);
@@ -188,18 +193,14 @@ function endGame() {
   $( "#end-game-n-rounds").html(nRoundsPlayed.toString());
   let avgScore = sumArray(gameScoreHistory[0])/gameScoreHistory[0].length;
   avgScoreR = roundDecimal(avgScore,2);
-  //avgScoreR = Math.round((avgScore + Number.EPSILON) * 100) / 100;
   $( "#end-game-avg-score").html(avgScoreR.toString());
-  
   
   let tempScore = sumArray(playerScoreHistoryCom100)
   $( "#end-game-pot-tot-score").html(tempScore.toString());
   tempScore = tempScore/playerScoreHistoryCom100.length
   tempScoreR = roundDecimal(tempScore,2);
-  //tempScoreR = Math.round((tempScore + Number.EPSILON) * 100) / 100
   $( "#end-game-pot-avg-score").html(tempScoreR.toString());
   
-  //tempScoreR = Math.round((avgScore - tempScore + Number.EPSILON) * 100) / 100
   tempScoreR = roundDecimal(avgScore - tempScore,2);
   $( "#end-game-CPT-score" ).html(tempScoreR.toString());
   // TODO: Generate plot of games
@@ -219,44 +220,33 @@ function endGame() {
     retryLimit: 3,
     tryCount: 0,
     success: function() { 
-      console.log("End game submitted to server");
+      $( "#button-end-game" ).attr("disabled", true);
+      if (nRoundsPlayed < 10) {
+        $( "#end-game-no-score-submit" ).show();
+        $( "#end-game-score-submit" ).hide();
+      } else {
+        $( "#end-game-no-score-submit" ).hide();
+        $( "#end-game-score-submit" ).show();
+      }
     },
     error: function(jqXHR, textStatus, errorThrown) {
-      //alert('Error: getComputerSplit fail for com_id=' + com_id.toString());
-      //console.log(jqXHR);
-      //console.log(textStatus);
-      //console.log(errorThrown);
       if (this.tryCount < this.retryLimit) {
-        // Try again
+        // Try again, up to tryCount attempts
         this.tryCount++;
         $.ajax(this);
-        console.log(this.tryCount);
       } else {
-        console.log("end_game failed")
+        alert("Failed when trying to End Game, please try again")
       }
     },
   })
-
-  if (nRoundsPlayed < 10) {
-    $( "#end-game-no-score-submit" ).show();
-    $( "#end-game-score-submit" ).hide();
-  } else {
-    $( "#end-game-no-score-submit" ).hide();
-    $( "#end-game-score-submit" ).show();
-  }
-
-  $( "#button-end-game" ).attr("disabled", true);
 }
 
-var tempEvent;
 function updateComDifficulty(event) {
-  console.log("Hi")
-  tempEvent = event.target;
   event.target.nextElementSibling.innerHTML = event.target.value;
 }
+
 function clearAllCards() {
   // Remove dealt cards display
-  
   // Remove cards
   // -- document.querySelectorAll(".card").forEach(e => e.remove()); <- JS equivalent
   $( ".card" ).remove();
@@ -270,7 +260,6 @@ function clearAllCards() {
     $( "#COM" + comID.toString() + " .container-status" ).empty();
   }
 
-  
 }
 
 function getPlayerSplitUsingCom100Strat() {
@@ -292,15 +281,10 @@ function getPlayerSplitUsingCom100Strat() {
         resolve(response);
       },
       error: function(jqXHR, textStatus, errorThrown) {
-        //alert('Error: getComputerSplit fail for com_id=' + com_id.toString());
-        //console.log(jqXHR);
-        //console.log(textStatus);
-        //console.log(errorThrown);
         if (this.tryCount < this.retryLimit) {
           // Try again
           this.tryCount++;
           $.ajax(this);
-          console.log(this.tryCount);
         } else {
           reject(jqXHR)
         }
@@ -310,10 +294,10 @@ function getPlayerSplitUsingCom100Strat() {
 }
 
 function getComputerSplitNew(com_id) {
-  console.log('Getting best split for COM' + com_id.toString())
   $( "#COM" + com_id.toString() + " .container-status" ).html("Thinking...")
   updateStatus('Round ' + (nRoundsPlayed+1).toString() + ' - COM thinking - select your split', 'red');
   
+  // Send ajax request to fetch computer split
   return new Promise((resolve, reject) => {
     $.ajax({
       type: 'POST',
@@ -321,7 +305,7 @@ function getComputerSplitNew(com_id) {
       url: '/post/get_computer_split',
       dataType: 'json',
       data: JSON.stringify({
-        'ComID':com_id, 
+        'ComID':com_id,
         'Difficulty': comDifficulty[com_id-1],
         'AppRoundID': appRoundID,
         'IsTrueCom': true
@@ -346,15 +330,10 @@ function getComputerSplitNew(com_id) {
         resolve(comSplitInfo[com_id-1]);
       },
       error: function(jqXHR, textStatus, errorThrown) {
-        //alert('Error: getComputerSplit fail for com_id=' + com_id.toString());
-        //console.log(jqXHR);
-        //console.log(textStatus);
-        //console.log(errorThrown);
         if (this.tryCount < this.retryLimit) {
           // Try again
           this.tryCount++;
           $.ajax(this);
-          console.log(this.tryCount);
         } else {
           reject(jqXHR)
         }
@@ -362,12 +341,8 @@ function getComputerSplitNew(com_id) {
     })
   })
 }
-var comSplits; // VC: temp to check com selected split output
-
 
 function newRound() {
-  //window.location.href='{{ url_for('play_game') }}';
-
   function clearAllCardsPromise() {
     return new Promise((resolve, reject) => {
       clearAllCards();
@@ -397,15 +372,13 @@ function newRound() {
       gameID = response['GameID'];
       seatID = response['SeatID'];
       handHistory.push([gameID, seatID]);
-      dealtCardImgFilesFull = response['DealtCardsImgFilenamesFull'];
       dealtCardImgFiles = response['DealtCardsImgFilenames'];
-      displayDealtCardsFull();
-      displayDealtCardsSet();
+      displayDealtCardsFull(response['DealtCardsImgFilenamesFull']);
+      displayDealtCardsSet(response['DealtCardsImgFilenames']);
       displayComCards();
       $( "#card-pool, #set1, #set2, #set3" ).sortable("enable");
       n_cards_in_set = [0, 0, 0];
       resolve();
-      //resolve({'a':1, 'b':2});
     })
   }
   
@@ -438,7 +411,7 @@ function newRound() {
     return Promise.all([getComputerSplitNew(1), getComputerSplitNew(2), getComputerSplitNew(3)])
   }
   
- $( "#button-submit" ).hide();
+  $( "#button-submit" ).hide();
   $( "#button-new-game" ).prop("disabled", true);
   $( "#button-new-round" ).prop("disabled", true);
   $( "#score-table" ).hide();
@@ -450,13 +423,10 @@ function newRound() {
     .then(showDealtCardsPromise)
     .then(addRoundInfoToDBPromise)
     .then(function(result) {
-      //console.log(result);
-      //$( "#button-reset" ).attr("disabled", false);
       $( "#button-random" ).attr("disabled", false);
     })
     .then(getComSplitsPromise)
     .then(function(result) {
-      comSplits = result;
       updateStatus('Round ' + (nRoundsPlayed+1).toString() + ' - COM ready - select your split', 'green');
     })
     .then(getPlayerSplitUsingCom100Strat) 
@@ -482,8 +452,15 @@ function showScoreTableToggle() {
   }
 }
 
-// <img src="/static/CardImages/{{ img_info[0] }}.png", width="35", height="66", title="{{ img_info[1] }}">
+/*--------------------------------------
+-- START Card display functions START --
+--------------------------------------*/
 function genCardImgEl(filebase, title, width=35, height=66) {
+  /*
+  Generate card <img> element
+  <img src="/static/CardImages/{{ img_info[0] }}.png", width="35", height="66", title="{{ img_info[1] }}">
+  */
+
   imgEl = $( "<img>" )
     .attr({
       "src": `/static/CardImages/${filebase}.png`,
@@ -505,30 +482,22 @@ function genCardDivEl(filebase, id=undefined) {
     divEl.prop("id", id);
   return divEl;  
 }
-function displayDealtCardsFull() {
+function displayDealtCardsFull(dealtCardImgFilesFull) {
   // Shows grid of cards, dealt cards shown face up while
   // other cards are shown face down
   mainDiv = $( ".card-set" );
   mainDiv.empty();
-  // dealtCardImgFilesFull
+  
   for (let sI=0; sI<4; sI++) {
     for (let cI=0; cI<13; cI++) {
       imgEl = genCardImgEl(dealtCardImgFilesFull[sI][cI][0], dealtCardImgFilesFull[sI][cI][1]);
-
-      /*
-      if (dealtCardImgFilesFull[sI][cI][1] == "Not selected") {
-        
-      } else {
-        imgEl = genCardImgEl(dealtCardImgFilesFull[sI][cI][0], dealtCardImgFilesFull[sI][cI][1]);
-      }
-      */
      mainDiv.append(imgEl);
     }
     mainDiv.append( $( "<br>" ) );
   }
 }
 
-function displayDealtCardsSet() {
+function displayDealtCardsSet(dealtCardImgFiles) {
   containerDiv = $( "#card-pool" );
   for (let cI=0; cI<13; cI++) {
     divEl = genCardDivEl(dealtCardImgFiles[cI][0], cardIdPrefix + cI.toString());
@@ -547,10 +516,6 @@ function displayComCards() {
   }
 }
 
-function assignRandomSplitOutput(output)  {
-  randomSplitOutput = output;
-}
-
 function updateSetContainersWithFullSplit(
   containerID,
   fileArray,
@@ -560,16 +525,16 @@ function updateSetContainersWithFullSplit(
 
   var card_sel;
   
-  console.log(fileArray);
   outerDivID =  "#" + containerID;
+
   // First, empty cards from pool and sets
   $( outerDivID  + " .container-pool").empty();
-
   for (setInd=0; setInd<3; ++setInd) {
     setSelector = outerDivID + " .set-container-full > div:nth-child(" + (setInd+1).toString() + ")";
     
     $( setSelector ).empty();
   }
+
   // Second, loop over sets and add card images and descriptions
   for (let setInd=0; setInd<3; ++setInd) {
     setSelector = outerDivID + " .set-container-full > div:nth-child(" + (setInd+1).toString() + ")";
@@ -582,7 +547,6 @@ function updateSetContainersWithFullSplit(
       card_el.attr('id',cardIdPrefix + fileArray[setInd][cardInd][2]); // Ind in dealt cards
       card_el.attr('style',"background-image: url('/static/CardImages/" + fileArray[setInd][cardInd][0] + ".png'); background-size:cover;");
       
-      //console.log(card_el);
       $( setSelector ).append(card_el);
       
     }
@@ -590,8 +554,14 @@ function updateSetContainersWithFullSplit(
     $( outerDivID + " .header" + setNumStr ).html(set_desc);
   }
 }
+/*----------------------------------
+-- END Card display functions END --
+----------------------------------*/
 
 function randomSplit() {
+  /*
+  Send POST request to server to get a random split
+  */
   $.ajax({
     type: 'POST',
     contentType: 'application/json',
@@ -599,8 +569,6 @@ function randomSplit() {
     dataType: 'json',
     data : JSON.stringify({}),
   }).done(function(response) {
-    
-    assignRandomSplitOutput(response); // VC: remove later
     
     allSplitDesc[0] = [response['set1Desc'], response['set2Desc'], response['set3Desc']];
     updateSetContainersWithFullSplit(
@@ -615,26 +583,25 @@ function randomSplit() {
     $( "#button-submit" ).attr("disabled", false);
     $( "#button-reset" ).attr("disabled", false);
   }).fail(function() {
-    alert('Error: Could not contact server');
+    alert('Error: Could not contact server, try again');
   });
 }
 
-var is_valid;
-function callback(response) {
-  is_valid = response;
-}
-
 function validateSplit() {
+  /* 
+  Function that checks whether the player split is valid.
+  I.e. is Front < middle < back?
+  */
 
+  // First ensure that all sets are populated fully.
   for (sI=0; sI<3; sI++) {
     if (n_cards_in_set[sI] != setLengths[sI]) {
       return false;
     }
   }
 
-  //var is_valid = false;
-  // Check code strength ascending
-    
+  // Send ajax to server to check code is ascending in strength
+
   $.ajax({
     type: 'POST',
     contentType: 'application/json',
@@ -655,21 +622,12 @@ function validateSplit() {
       tmp_is_valid = true;
     }
     callback(tmp_is_valid)
-    //alert(response['Description']);
-    //html_content = 'Set ' + targetIdNum + ' (' + targetSetLength.toString() + ' cards)' + '<br>' + response['Description'];
-    //$('#header' + targetIdNum).html(html_content);
-    //setCodes[parseInt(targetIdNum)-1] = response['SetCode'];
-    //console.log("respone['SetCode']:" + response['SetCode']);
-    //console.log('setCodes:' + setCodes.toString());
-    //alert(html_content)
   }).fail(function() {
     alert('Error: Could not contact server');
   });
-    
   
   return is_valid;
 }
-
 
 
 function resetCards() {
@@ -698,8 +656,6 @@ function clearSetDescriptions(userOnly=true) {
   }
 }
 
-var compRes; // VC: temp to store split comparison results
-//var gameScores;
 
 function getSplitInds() {
   let splitInds = [[],[],[]];
@@ -710,15 +666,20 @@ function getSplitInds() {
   }
   return splitInds;
 }
+
 function playHand() {
+  /*
+  Function that handles the process of playing a split hand.
+  A POST request is sent to the server with all the splits and the server will return comparison results.
+  The scoreboard is then updated.
+  */
   
   let gameScores;
   $( "#card-pool, #set1, #set2, #set3" ).sortable("disable");
   $( "#gameplay-button-container button" ).attr("disabled", true);
   
   splitInds = getSplitInds();
-  console.log(splitInds);
-  // VC: server side need to sort cards
+  
   $.ajax({
     type: 'POST',
     contentType: 'application/json',
@@ -739,8 +700,7 @@ function playHand() {
       'SplitInds': splitInds,
     }),
   }).done(function(response) {
-    console.log(response);
-    compRes = response['SplitComp'];
+    
     gameScores = response['GameScores'];
 
     for (let com_id=1; com_id<=3; com_id++) {
@@ -756,7 +716,7 @@ function playHand() {
     for (let pI=0; pI<4; pI++) {
       gameScoreHistory[pI].push(response['TotGameScores'][pI]);
     }
-    updateScoreTable(gameScores);
+    updateScoreTable(gameScores, response['SplitComp']);
     
     playerScoreHistoryCom100.push(response['TotGameScoresCom100'][0])
     // Show score table
@@ -764,9 +724,9 @@ function playHand() {
     $( "#button-score-table-toggle" ).html("Hide scores");
     $( "#button-new-round" ).attr("disabled", false);
     $( "#button-end-game" ).attr("disabled", false);
+    
     nRoundsPlayed += 1;
     updateStatus("Press 'Next round' to  play round " + (nRoundsPlayed+1).toString(), 'green');
-    //gameScores[]
     window.scrollTo(0,0);
   })
 }
@@ -784,15 +744,9 @@ function constructHeaderContent(setNo, desc=undefined) {
 
 
 
-
-// Scoreboard functions
-function sumArray(toSum) {
-  sum = toSum.reduce(function(a, b) {
-    return a + b;
-  });
-  return sum;
-}
-
+/*------------------------------------
+-- START Scoreboard functions START --
+------------------------------------*/
 function getCumGameScores() {
   
 
@@ -804,7 +758,9 @@ function getCumGameScores() {
   };
   return cumGameScores;
 }
+
 function resetScoreTable() {
+  // Completely clear the score table
   var cellSelector;
   var colInd;
   for (let p1=0; p1<4; p1++) {
@@ -818,8 +774,6 @@ function resetScoreTable() {
         ") > .cell-score-base:eq(" +
         (colInd).toString() +
         ")";
-      //console.log(cellSelector);
-
       $(cellSelector).empty();
       colInd++;
     }
@@ -848,7 +802,7 @@ function updateScoreTableClearGame() {
   }
 }
 
-function updateScoreTable(gameScores) {
+function updateScoreTable(gameScores, compRes) {
   var cellSelector;
   var colInd;
   var playerGameScore;
@@ -865,11 +819,11 @@ function updateScoreTable(gameScores) {
         ") > .cell-score-base:eq(" +
         (colInd).toString() +
         ")";
-      //console.log(cellSelector);
-
+      
       $(cellSelector).html(gameScores[p1][p2].toString());
       colInd++;
-
+      
+      // Create hover on head-to-head score
       hoverEl = $("<div></div>")
       hoverEl.addClass("score-cell-hover")
 
@@ -924,8 +878,14 @@ function updateScoreTable(gameScores) {
   }
 }
 
+/*--------------------------------
+-- END Scoreboard functions END --
+--------------------------------*/
 
-// Set up sortable  IIFC
+/*----------------------------------
+-- START sortable functions START --
+----------------------------------*/
+// IIFE to set up sortable
 $( function() {
   $( "#card-pool, #set1, #set2, #set3").sortable({
     connectWith: ".connected",
@@ -944,8 +904,7 @@ $( function() {
       const sourceIdNum = sourceId[sourceId.length-1];
 
       var html_content;
-      console.log('sourceId:' + sourceId)
-
+      
       var targetSetLength;
       var sourceSetLength;
       var targetInd;
@@ -960,9 +919,7 @@ $( function() {
       if (targetId == 'card-pool') {
         setCodes[parseInt(sourceIdNum)-1] = '()';
         $( "#button-submit" ).attr("disabled", true);
-        //return true;
       }
-      //console.log('setLength:' + setLength.toString())
 
       // If card moved to a set
       if (['1','2','3'].includes(targetIdNum)) {
@@ -973,6 +930,8 @@ $( function() {
           return false;
         } else if (targetCurLength+1 == targetSetLength) {
           card_ids = $("#" + targetId).sortable("toArray");
+
+          // Send ajax request to determine set descriptions
           $.ajax({
             type: 'POST',
             contentType: 'application/json',
@@ -986,17 +945,14 @@ $( function() {
               'targetSet': targetInd+1,
             }),
           }).done(function(response) {
-            //alert(response['Description']);
+            
             allSplitDesc[0][targetInd] = response['Description'];
             html_content = 'Set ' + targetIdNum + 
               ' (' + targetSetLength.toString() + ' cards)' + 
               '<br>' + response['Description'];
             $('#USER > .header' + targetIdNum).html(html_content);
             setCodes[targetInd] = response['SetCode'];
-            //console.log("respone['SetCode']:" + response['SetCode']);
-            //console.log('setCodes:' + setCodes.toString());
-            //alert(html_content)
-            console.log(response)
+
             if (response['ValidSplit'] == 1) {
               $( "#button-submit" ).attr("disabled", false);
             }
@@ -1028,7 +984,6 @@ $( function() {
 });
 
 
-/* START draggable element START */
 function dragStart(event) {
   var style = window.getComputedStyle(event.target, null);
   event.dataTransfer.setData("text/plain",
@@ -1049,6 +1004,9 @@ function dropElement(event) {
     return false;
 } 
 
+/*------------------------------
+-- END sortable functions END --
+------------------------------*/
 
 
 function showHandRankToggle() {
@@ -1064,21 +1022,18 @@ function showHandRankToggle() {
 }
 
 
-/* END draggable element END */
-
-var eventObj;
-/* Submit score */
+/*-------------------------------------
+-- START Leaderboard functions START --
+-------------------------------------*/
 function submitScore(event) {
-  // 
+  /*
+  Function that handles the submission of score to the server.
+  After submission, leader info is returned by the request and a leaderboard is shown on the page.
+  */
   event.preventDefault();
-  eventObj = event;
-  console.log('Name:' + document.getElementById("submit-score-input-name").value)
-  console.log('Email:' + document.getElementById("submit-score-input-email").value)
-  // submit gameScoreHistory[0]
+  
   let name = document.getElementById("submit-score-input-name").value
   let email = document.getElementById("submit-score-input-email").value
-  //alert('Submitting score');
-  // TODO: add form checking - name must be filled
   
   function submitScorePromise() {
     return new Promise((resolve, reject) => {
@@ -1093,7 +1048,6 @@ function submitScore(event) {
           'AppGameID': appGameID,
         }),
         success: function(data) {
-          console.log('Submitted Score!');
           resolve(data);
         },
         error: function(error) {
@@ -1102,7 +1056,6 @@ function submitScore(event) {
       })
     })
   }
-  
   
   submitScorePromise()
     .then(function() {
@@ -1137,7 +1090,6 @@ function showLeaderboardPromise(appGameID, showTop) {
         'ShowTop': showTop
       }),
       success: function(data) {
-        //console.log('Submitted Score!');
         resolve(data);
       },
       error: function(error) {
@@ -1147,12 +1099,12 @@ function showLeaderboardPromise(appGameID, showTop) {
   })
 }
 
-/* */
-var globLeaderInfo;
 function genLeaderboard(leaderInfo) {
-  globLeaderInfo = leaderInfo;
-
-  // Rank, Name, CPT Score, Tot COM Ability, NoRounds, Date
+  /*
+  Generate leaderboard table HTML from leader info fetched via POST
+  Table columns: Rank, Name, CPT Score, Tot COM Ability, NoRounds, Date
+  */
+   
   tableEl = $("<table></table>");
 
   let titleRow = $("<tr></tr>");
@@ -1183,78 +1135,10 @@ function genLeaderboard(leaderInfo) {
     tempEntryRow.append(`<td>${tempRank}</td><td>${leaderInfo[rI][1]}</td><td>${tempCptScore}</td><td>${leaderInfo[rI][2]}</td><td>${leaderInfo[rI][3]}</td><td>${leaderInfo[rI][6]}</td>`);
     tableEl.append(tempEntryRow);
   }
-  console.log(tableEl);
+  
   $( "#high-score-table-section" ).html("<h2>High Scores:</h2>");
   $( "#high-score-table-section" ).append(tableEl);
 }
-// Get client IP
-// https://ipdata.co/blog/how-to-get-the-ip-address-in-javascript/
-function getClientIp() {
-  let ipRequest = new Request(`https://www.cloudflare.com/cdn-cgi/trace`);
-  return fetch(ipRequest)
-    .then(function(response) {
-      return response.text()
-    })
-    .then(function(text) {
-      const ipRegex = /[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/;
-      clientIp = text.match(ipRegex)[0];
-    });
-}
-/*
-Old Sortable Code
-$( function() {
-    $( "#sortable-grid" ).sortable(
-      {
-        items: ':not(.static)',
-        start: function(){
-          $('.static', this).each(function(){
-              var $this = $(this);
-              $this.data('pos', $this.index());
-          });
-        },
-        change: function(){
-          $sortable = $(this);
-          $statics = $('.static', this).detach();
-          $helper = $('<div></div>').prependTo(this);
-          $statics.each(function(){
-              var $this = $(this);
-              var target = $this.data('pos');
-
-              $this.insertAfter($('div', $sortable).eq(target));
-          });
-          $helper.remove();
-        }
-      }
-    );
-    $( "#sortable-grid" ).disableSelection();
-  } 
-);
-
-$( function() {
-  $( "#swapable-grid" ).sortable(
-    {
-      items: ':not(.static)',
-      start: function(){
-        $('.static', this).each(function(){
-            var $this = $(this);
-            $this.data('pos', $this.index());
-        });
-      },
-      change: function(){
-        $sortable = $(this);
-        $statics = $('.static', this).detach();
-        $helper = $('<div></div>').prependTo(this);
-        $statics.each(function(){
-            var $this = $(this);
-            var target = $this.data('pos');
-
-            $this.insertAfter($('div', $sortable).eq(target));
-        });
-        $helper.remove();
-      }
-    }
-  );
-  $( "#swapable-grid" ).disableSelection();
-} 
-);
-*/
+/*---------------------------------
+-- END Leaderboard functions END --
+---------------------------------*/

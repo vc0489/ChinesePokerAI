@@ -5,7 +5,7 @@ from distutils.core import setup
 
 setup(
   name="ChinesePokerLib",
-  version="0.0.1",
+  version="1.0.0",
   author="Vincent Chen",
   author_email="vc0489@gmail.com",
   description="Library for simulating Chinese Poker",

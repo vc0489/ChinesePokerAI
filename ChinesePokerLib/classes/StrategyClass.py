@@ -251,6 +251,7 @@ class ChinesePokerStrategyClass(StrategyClass):
     if max_elapsed_sec is None:
       max_elapsed_sec = self.pick_max_elapsed_sec
     
+    start = timer()
       
     generator = self.split_generator(cards)
     

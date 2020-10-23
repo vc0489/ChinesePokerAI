@@ -613,7 +613,7 @@ function randomSplit() {
     setCodes = [response['set1Code'],response['set2Code'],response['set3Code']];
     n_cards_in_set = [...setLengths];
     $( "#button-submit" ).attr("disabled", false);
-
+    $( "#button-reset" ).attr("disabled", false);
   }).fail(function() {
     alert('Error: Could not contact server');
   });
@@ -1005,6 +1005,7 @@ $( function() {
           })
         }
         n_cards_in_set[targetInd]++;
+        $( "#button-reset" ).attr("disabled", false);
       }
 
       // If card moved from a set
@@ -1017,6 +1018,9 @@ $( function() {
           $('#USER > .header' + sourceIdNum).html(html_content);
         }
         n_cards_in_set[sourceInd]--;
+        if (sumArray(n_cards_in_set) == 0) {
+          $( "#button-reset" ).attr("disabled", true);
+        }
         setCodes[sourceInd] = '()';
       }
     }

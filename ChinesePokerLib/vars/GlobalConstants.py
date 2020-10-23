@@ -2,7 +2,7 @@ import os
 import os.path as op
 from pathlib import Path
 
-_BASEDIR = Path(__file__).parent.absolute() / '..' / '..'/ '..' 
+_BASEDIR = Path(__file__).parent.absolute() / '..' / '..' 
 _BASEDIR = _BASEDIR.resolve()
 
 DATADIR = _BASEDIR / 'Data'

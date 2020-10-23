@@ -102,12 +102,13 @@
     </p>
 
     <p>
-    The ChinesePokerTips <a href="{{ url_for('play_game') }}">game</a> uses the 1-6 scoring method in which three bonus points (on top of the three points from set-by-set comparison) are awarded to a player for winning all three sets against an opponent.
-    The opponent who lost all three sets will have three points deducted and ends up with negative six points from the head-to-head.
-    No other bonuses are awarded here and hence the sum of all player scores is always zero.
+    The ChinesePokerTips <a href="{{ url_for('play_game') }}">game</a> uses the 1-6 scoring method in which three additional points (on top of the three points gained from set-by-set comparison) are awarded to a player for winning all three sets against an opponent.
+    Three points are deducted from the opponent who ends up with negative six points from the head-to-head.
+    No other bonuses are awarded in the ChinesePokerTips game variant and hence the sum of all player scores is always zero after each round.
     </p>
     
     <p>
+    To create this web application I wrote a Python engine to 
     I have trained a gradient boosting regression model which takes in a hand of cards split into the three sets and outputs a quantity representing its overall strength.
     This model is used to power the AI in the game.
     In the near future, some of the game engine functionality will be made available via an API for any interested developers to use.

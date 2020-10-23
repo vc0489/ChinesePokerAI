@@ -8,19 +8,17 @@ from deprecated import deprecated
 import random
 
 
-from ChinesePokerLib.classes.DeckClass import DeckClass
-from ChinesePokerLib.classes.CardClass import CardClass
+from ChinesePokerLib.classes.Deck import Deck
+from ChinesePokerLib.classes.Card import Card
 import ChinesePokerLib.modules.DBFunctions as DBF
-from ChinesePokerLib.classes.CardGroupClass import CardGroupCode
-from ChinesePokerLib.classes.StrategyClass import ChinesePokerStrategyClass
-
-#from ChinesePokerLib.classes.StrategyClass import ChinesePokerPctileScoreStrategyClass
+from ChinesePokerLib.classes.CardGroup import CardGroupCode
+from ChinesePokerLib.classes.Strategy import ChinesePokerStrategy
 
 import ChinesePokerLib.vars.GameConstants as GameC 
 import ChinesePokerLib.vars.GlobalConstants as GlobC 
 
 deck_type = 'STANDARD'
-deck_obj = DeckClass(deck_type)
+deck_obj = Deck(deck_type)
 
 def get_latest_dealt_hands_dump(min_n_games=10000):
   files = glob.glob(str(GlobC.DEALT_HANDS_DUMP_DIR / '*.txt'))
@@ -101,14 +99,13 @@ def yield_dealt_hands_from_db(
       end_game_no (int): End game number.
       db_connector ([type], optional): [description]. Defaults to None.
       db_load_batch_size (int, optional): [description]. Defaults to 1000.
-      cards_as_str (bool, optional): Return cards as string rather then CardClass objects. Defaults to False.
+      cards_as_str (bool, optional): Return cards as string rather then Card objects. Defaults to False.
 
   Yields:
       [type]: [description]
   """
   dealt_hands_table = GameC.CHINESE_POKER_db_consts["dealt_hands_table"]
   base_query = f'SELECT GameID, DealtHandsStr FROM {dealt_hands_table} WHERE GameID BETWEEN %s AND %s'
-  #deck_obj = DeckClass()
 
   if start_game_no is None:
     start_game_no = 1
@@ -371,14 +368,14 @@ def get_splits_data_for_single_game_and_seat_from_db(
   Args:
       game_id (int): GameID
       seat_id (int): Between 1 and 4
-      cards (List): List of CardClass objects or card strings. 
+      cards (List): List of Card objects or card strings. 
   """
 
   if cards is None:
     hands = next(yield_dealt_hands_from_db(game_id, game_id))[1]
     cards = hands[seat_id-1]
   elif isinstance(cards[0], str):
-    deck = DeckClass()
+    deck = Deck()
     cards = deck.deal_custom_hand(cards)
 
   splits_table = GameC.CHINESE_POKER_db_consts['splits_table']
@@ -407,7 +404,7 @@ def get_splits_data_for_single_game_and_seat_from_db(
     s2code = CardGroupCode([code for code in s2code if code is not None])
     s3code = CardGroupCode([code for code in s3code if code is not None])
     
-    split_info_factory = ChinesePokerStrategyClass.ranked_split_info_factory
+    split_info_factory = ChinesePokerStrategy.ranked_split_info_factory
 
     split_info = split_info_factory(
       split_inds,
@@ -429,21 +426,6 @@ def yield_splits_data_from_db(
   start_game_id = None,
   end_game_id = None,
 ):
-
-  #db_connector = DBF.connect_to_db()
-  #splits_table = GameC.CHINESE_POKER_db_consts['splits_table']
-  #codes_table = GameC.CHINESE_POKER_db_consts['split_codes_table']
-  #base_query = f'SELECT SplitSeqNo, SplitStr, + ' \
-  #              f'c1.L1Code AS S1L1Code, c1.L2Code AS S1L2Code, c1.L3Code AS S1L3Code, c1.L4Code AS S1L4Code, c1.L5Code AS S1L5Code, c1.L6Code AS S1L6Code, ' + \
-  #              f'c2.L1Code AS S2L1Code, c2.L2Code AS S2L2Code, c2.L3Code AS S2L3Code, c2.L4Code AS S2L4Code, c2.L5Code AS S2L5Code, c2.L6Code AS S2L6Code, ' + \
-  #              f'c3.L1Code AS S3L1Code, c3.L2Code AS S3L2Code, c3.L3Code AS S3L3Code, c3.L4Code AS S3L4Code, c3.L5Code AS S3L5Code, c3.L6Code AS S3L6Code ' + \
-  #              f'FROM {splits_table} s ' + \
-  #              f'JOIN {codes_table} c1 ON s.SplitID=c1.SplitID ' + \
-  #              f'JOIN {codes_table} c2 ON s.SplitID=c2.SplitID ' + \
-  #              f'JOIN {codes_table} c3 ON s.SplitID=c3.SplitID ' + \
-  #              f'WHERE s.GameID=%s AND s.SeatID=%s ' + \
-  #              f'AND c1.SetNo=1 AND c2.SetNo=2 AND c3.SetNo=3'
-
   for game_id in range(start_game_id, end_game_id+1):
     hands = next(yield_dealt_hands_from_db(game_id, game_id))[1]
     game_splits = []
@@ -454,44 +436,10 @@ def yield_splits_data_from_db(
       cards = hands[seat_id-1]
       hand_splits = get_splits_data_for_single_game_and_seat_from_db(game_id, seat_id, cards)
       
-      """
-      db_output, _ = DBF.select_query(query)
-      
-      hand_splits = []
-      for row in db_output:
-        split_seq_no, split_str, s1c1,s1c2,s1c3,s1c4,s1c5,s1c6, s2c1,s2c2,s2c3,s2c4,s2c5,s2c6, s3c1,s3c2,s3c3,s3c4,s3c5,s3c6 = row
-
-        split_cards = _convert_split_str_to_split_cards(cards, split_str)
-        s1code = [s1c1, s1c2, s1c3, s1c4, s1c5, s1c6]
-        s2code = [s2c1, s2c2, s2c3, s2c4, s2c5, s2c6]
-        s3code = [s3c1, s3c2, s3c3, s3c4, s3c5, s3c6]
-
-        s1code = CardGroupCode([code for code in s1code if code is not None])
-        s2code = CardGroupCode([code for code in s2code if code is not None])
-        s3code = CardGroupCode([code for code in s3code if code is not None])
-        
-        split_info_factory = ChinesePokerStrategyClass.ranked_split_info_factory
-
-        split_info = split_info_factory(
-          None,
-          split_cards,
-          (s1code, s2code, s3code),
-          None,
-          None,
-          None,
-          None,
-          None,
-          split_seq_no,
-        )
-        hand_splits.append(split_info)
-      """
       game_splits.append(hand_splits)
     
     yield game_id, game_splits
-          
 
-        # TODO Convert each row to RankedSplitInfo named tuple
-        # (Inds, Cards, Codes, )
   return
 
 

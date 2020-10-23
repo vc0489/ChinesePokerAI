@@ -1,18 +1,18 @@
-from ChinesePokerLib.classes.DeckClass import DeckClass
-from ChinesePokerLib.classes.PlayerClass import ComputerChinesePokerPlayerClass
-from ChinesePokerLib.classes.HandClass import ChinesePokerHandClass
-from ChinesePokerLib.classes.CardGroupClass import CardGroupClassifier, CardGroupCode
-from ChinesePokerLib.classes.StrategyClass import ChinesePokerPctileScoreStrategyClass
+from ChinesePokerLib.classes.Deck import Deck
+from ChinesePokerLib.classes.Player import ComputerChinesePokerPlayer
+from ChinesePokerLib.classes.Hand import ChinesePokerHand
+from ChinesePokerLib.classes.CardGroup import CardGroupClassifier, CardGroupCode
+from ChinesePokerLib.classes.Strategy import ChinesePokerPctileScoreStrategy
 
 import ChinesePokerLib.vars.GameConstants as GConst
-from ChinesePokerLib.classes.ExceptionClasses import InvalidGameModeError
+from ChinesePokerLib.classes.Exception import InvalidGameModeError
 
 from itertools import combinations
 import scipy.stats as ss 
 import numpy as np
 from timeit import default_timer as timer
 
-class ChinesePokerGameHistoryClass:
+class ChinesePokerGameHistory:
   def __init__(self):
     self.history = []
 
@@ -65,7 +65,7 @@ class ChinesePokerGameHistoryClass:
     
     
   
-class ChinesePokerGameClass:
+class ChinesePokerGame:
 
   # Class attributes
   game_type = GConst.ChinesePokerKey
@@ -74,7 +74,7 @@ class ChinesePokerGameClass:
   hands_split_into = GConst.GEN_hands_split_into[game_type] # (3,5,5)
   splits_force_ascending = GConst.GEN_hands_split_ascending_required[game_type] # True
 
-  hand_class = ChinesePokerHandClass
+  hand_class = ChinesePokerHand
 
   def __init__(
     self, 
@@ -84,18 +84,18 @@ class ChinesePokerGameClass:
     random_seat=False,
     history=None,
   ):
-    self.deck = DeckClass()
-    self.n_players = len(ChinesePokerGameClass.player_seat_labels) # 4
-    self.cur_dealer_ind = ChinesePokerGameClass.player_seat_labels.index(ChinesePokerGameClass.starting_dealer)
+    self.deck = Deck()
+    self.n_players = len(ChinesePokerGame.player_seat_labels) # 4
+    self.cur_dealer_ind = ChinesePokerGame.player_seat_labels.index(ChinesePokerGame.starting_dealer)
     self.cur_play_seq = None
 
     self.games_played = 0
-    #self.games_history = ChinesePokerGameHistoryClass()
+    #self.games_history = ChinesePokerGameHistory()
 
     self.game_mode = game_mode
     self.players = {}
     if strategies is None:
-      strategies = [ChinesePokerPctileScoreStrategyClass() for pI in range(self.n_players)]
+      strategies = [ChinesePokerPctileScoreStrategy() for pI in range(self.n_players)]
     elif not isinstance(strategies, (list, tuple)):
       strategies = [strategies for pI in range(self.n_players)]
     
@@ -106,7 +106,7 @@ class ChinesePokerGameClass:
       if not random_seat:
         for i,label in enumerate(self.player_seat_labels):
           if players is None or players[i] is None:
-            self.players[label] = ComputerChinesePokerPlayerClass(strategy=strategies[i])
+            self.players[label] = ComputerChinesePokerPlayer(strategy=strategies[i])
           else:
             self.players[label] = players[i]
       else:    
@@ -115,7 +115,7 @@ class ChinesePokerGameClass:
       raise InvalidGameModeError(f'game_mode {game_mode} not valid.')
 
     if history is None:
-      history = ChinesePokerGameHistoryClass()
+      history = ChinesePokerGameHistory()
     
     self.history = history
 
@@ -198,7 +198,6 @@ class ChinesePokerGameClass:
 
   def _compare_splits(self):
     seat_pairs = list(combinations(self.player_seat_labels,2))
-    #classifier = CardGroupClassifier()
     
     comparison_results = {}
     for seat in self.player_seat_labels:
@@ -267,19 +266,6 @@ class ChinesePokerGameClass:
     for sI in range(n_splits):
       p1_code = player1.cur_hand.split_codes[sI]
       p2_code = player2.cur_hand.split_codes[sI]
-      #p1_inds = player1.cur_hand.split_inds[sI]
-      #p1_cards = [player1.cur_hand.cards[i] for i in p1_inds]
-      #p2_inds = player2.cur_hand.split_inds[sI]
-      #p2_cards = [player2.cur_hand.cards[i] for i in p2_inds]
-      #p1_code = classifier._find_n_card_set_codes(
-      #  p1_cards, 
-      #  self.hands_split_into[sI]
-      #)[0][0]
-      #p2_code = classifier._find_n_card_set_codes(
-      #  p2_cards,
-      #  self.hands_split_into[sI]
-      #)[0][0]
-      
 
       if p1_code > p2_code:
         comparison_results.append(1)
@@ -312,7 +298,6 @@ class ChinesePokerGameClass:
       history_data['Players'][seat_label]['BaseGameScore'] = self.cur_base_scores[seat_label]
     history_data['Dealer'] = self.player_seat_labels[self.cur_dealer_ind]
     history_data['RoundTime'] = self.cur_round_time
-    
 
     self.history.add_round(history_data)
     # 

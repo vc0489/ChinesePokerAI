@@ -8,12 +8,12 @@ import random
 from itertools import permutations
 import pandas as pd
 
-from ChinesePokerLib.classes.GameClass import ChinesePokerGameClass
-from ChinesePokerLib.classes.DeckClass import DeckClass
-from ChinesePokerLib.classes.DataClass import DataClass
-from ChinesePokerLib.classes.CardClass import CardClass
-from ChinesePokerLib.classes.StrategyClass import ChinesePokerPctileScoreStrategyClass
-from ChinesePokerLib.classes.CardGroupClass import CardGroupCode
+from ChinesePokerLib.classes.Game import ChinesePokerGame
+from ChinesePokerLib.classes.Deck import Deck
+from ChinesePokerLib.classes.Data import Data
+from ChinesePokerLib.classes.Card import Card
+from ChinesePokerLib.classes.Strategy import ChinesePokerPctileScoreStrategy
+from ChinesePokerLib.classes.CardGroup import CardGroupCode
 
 from ChinesePokerLib.modules.UtilityFunctions import flattened_list
 
@@ -59,7 +59,7 @@ def gen_code_combs_set(strategy=None, score_round_fac=1):
   """
   
   if strategy is None:
-    strategy = ChinesePokerPctileScoreStrategyClass()
+    strategy = ChinesePokerPctileScoreStrategy()
 
   combs = []
   existing_scores = [[], [], []]
@@ -142,9 +142,9 @@ def gen_best_split_data(
 ):
   
   if strategy is None:
-    strategy = ChinesePokerPctileScoreStrategyClass(split_gen_filter_by_score = True)
+    strategy = ChinesePokerPctileScoreStrategy(split_gen_filter_by_score = True)
   start = timer()
-  deck = DeckClass()
+  deck = Deck()
   
   split_codes = []
   split_scores = []
@@ -193,25 +193,19 @@ def repeated_games_with_hand(
   unique_code_levels=None,
 ):
   start = timer()
-  #data_obj = DataClass()
-  deck = DeckClass()
+
+  deck = Deck()
 
   if strategies is None:
-    strategy = ChinesePokerPctileScoreStrategyClass(split_gen_filter_by_score = True)
+    strategy = ChinesePokerPctileScoreStrategy(split_gen_filter_by_score = True)
     strategies = [strategy for _ in range(4)]
   elif not isinstance(strategies, list):
     strategies = [strategies for _ in range(4)]
 
   if test_n_best_splits is None:
     test_n_best_splits = 1
-  
 
   cards = deck.deal_custom_hand(cards)
-  #if isinstance(cards, str):
-  #  cards = deck._convert_list_of_cards_from_user(cards)
-  #  cards = [CardClass.init_from_str(card) for card in cards]
-  #elif isinstance(cards[0], str):
-  #  cards = [CardClass.init_from_str(card) for card in cards]
   
   if verbose:
     print(f'Cards: {cards}')
@@ -223,9 +217,7 @@ def repeated_games_with_hand(
     'Codes': [[set_code.code for set_code in split[2]] for split in best_splits_P0],
   }
 
-  
-  
-  game_obj = ChinesePokerGameClass(strategies=strategies)
+  game_obj = ChinesePokerGame(strategies=strategies)
   for gI in range(n_games):
     
 
@@ -495,14 +487,14 @@ def compare_strategies_same_hand(strategy_list, n_hands, n_best_splits=1, includ
     hand_best_splits = []
     hand_n_gen_splits = []
     hand_times = []
-    deck = DeckClass()
+    deck = Deck()
     cards = deck.deal_cards()[0]
     
     
 
     if include_split_gen is False:
       if split_gen_strategy is None:
-        split_gen_strategy = ChinesePokerPctileScoreStrategyClass(
+        split_gen_strategy = ChinesePokerPctileScoreStrategy(
           pick_max_gen_splits=None,
           pick_max_elapsed_sec=None
         )
@@ -574,11 +566,11 @@ def compare_strategies_h2h_diff_hands(
   n_strats = len(strats)
 
   if hands_from_db:
-    max_game_id = DataClass.max_game_id_in_splits_table()
+    max_game_id = Data.max_game_id_in_splits_table()
     game_ids = random.sample(range(1,max_game_id+1), n_games)
-    data_obj = DataClass()
+    data_obj = Data()
   else:
-    deck = DeckClass()
+    deck = Deck()
   
   data_dict = {
     'GameSeqNo':[],

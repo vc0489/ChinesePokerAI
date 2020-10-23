@@ -3,9 +3,9 @@ from itertools import product
 from deprecated import deprecated
 
 import ChinesePokerLib.vars.CardConstants as CConst
-from ChinesePokerLib.classes.CardClass import CardClass
+from ChinesePokerLib.classes.Card import Card
 
-class DeckClass():
+class Deck():
   def __init__(self, deck_type='STANDARD', order_type='Random'):
     #self.cards = []
     self.deck_type = deck_type
@@ -51,7 +51,7 @@ class DeckClass():
 
   def _gen_deck(self):
       
-    deck = [CardClass(suit,number) for suit, number in self.deck_card_order]
+    deck = [Card(suit,number) for suit, number in self.deck_card_order]
 
     self.deck = self._get_card_strength_indices(deck)
     self.inds_of_deck_card_order = list(range(len(self.deck)))
@@ -245,7 +245,7 @@ class DeckClass():
       elif isinstance(cards_input[0], str):
         pass
       
-      elif isinstance(cards_input[0], CardClass):
+      elif isinstance(cards_input[0], Card):
         cards_input = [str(card) for card in cards_input]
       cards_output = cards_input
       

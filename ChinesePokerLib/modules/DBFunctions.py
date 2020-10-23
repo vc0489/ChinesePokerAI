@@ -1,6 +1,6 @@
 import mysql.connector
 
-from ChinesePokerLib.classes.ExceptionClasses import DBWriteError
+from ChinesePokerLib.classes.Exception import DBWriteError
 
 default_instance="chinesepoker.cgegv43sayeg.eu-west-2.rds.amazonaws.com"
 default_username="devUser"

@@ -6,16 +6,16 @@ import numpy as np
 import pandas as pd
 from deprecated import deprecated
 
-from ChinesePokerLib.classes.CardClass import CardClass
-from ChinesePokerLib.classes.CardGroupClass import CardGroupClassifier, CardGroupCode
+from ChinesePokerLib.classes.Card import Card
+from ChinesePokerLib.classes.CardGroup import CardGroupClassifier, CardGroupCode
 import ChinesePokerLib.vars.CardConstants as CConst
 import ChinesePokerLib.vars.GameConstants as GConst
-from ChinesePokerLib.classes.UtilityClasses import VarChecker
-from ChinesePokerLib.classes.ExceptionClasses import HandSplitInfoError, HandMissingScoringMethodError
+from ChinesePokerLib.classes.Utility import VarChecker
+from ChinesePokerLib.classes.Exception import HandSplitInfoError, HandMissingScoringMethodError
 
 from ChinesePokerLib.modules.UtilityFunctions import flattened_list
 
-class HandClass():
+class Hand():
   # Constructor 1
   def __init__(
     self, 
@@ -137,11 +137,9 @@ class HandClass():
   #
   #  return
 
-class SplitHandClass(HandClass):
+class SplitHand(Hand):
   """[summary]
 
-  Arguments:
-      HandClass {[type]} -- [description]
   
   """
 
@@ -332,11 +330,11 @@ class SplitHandClass(HandClass):
   #  return
 
 
-class ChinesePokerHandClass(SplitHandClass):
+class ChinesePokerHand(SplitHand):
   """[summary]
 
   Arguments:
-      SplitHandClass {[type]} -- [description]
+      SplitHand {[type]} -- [description]
   """
 
   def __init__(
@@ -362,7 +360,7 @@ class ChinesePokerHandClass(SplitHandClass):
     """
     cards = []
     for suit, number in zip(suits, numbers):
-      cards.append(CardClass(suit, number))
+      cards.append(Card(suit, number))
     self.__init__(cards)
     
     return

@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from ChinesePokerLib.classes.UtilityClasses import TwoWayDict
+from ChinesePokerLib.classes.Utility import TwoWayDict
 
 
 ###################### START Standard constants #########################

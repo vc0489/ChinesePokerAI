@@ -2,7 +2,7 @@ import itertools
 from typing import Union, Iterable, List, Tuple
 from deprecated import deprecated
 
-from ChinesePokerLib.classes.ExceptionClasses import UnknownCardStrengthTypeError, InvalidCardSuitError, InvalidCardNumberError, InvalidCardFormatSpecError
+from ChinesePokerLib.classes.Exception import UnknownCardStrengthTypeError, InvalidCardSuitError, InvalidCardNumberError, InvalidCardFormatSpecError
 import ChinesePokerLib.vars.CardConstants as CC
 
 # Suit
@@ -11,7 +11,7 @@ import ChinesePokerLib.vars.CardConstants as CC
 # H = Hearts
 # S = Spades
 
-class CardClass:
+class Card:
   card_strength_type='STANDARD'
   suit_name_map = CC.__dict__[card_strength_type + '_suit_name_map']
   full_suit_name_map = CC.__dict__[card_strength_type + '_full_suit_name_map']
@@ -38,7 +38,7 @@ class CardClass:
     
     self._validate_suit(suit)
 
-    # These will be initilialised by DeckClass
+    # These will be initilialised by Deck
     self.number_strength_ind = None
     self.suit_strength_ind = None
     self.deck_card_ind = None

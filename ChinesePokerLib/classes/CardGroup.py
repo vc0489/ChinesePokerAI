@@ -7,12 +7,12 @@ import numpy as np
 import pandas as pd
 from deprecated import deprecated
 
-from ChinesePokerLib.classes.DeckClass import DeckClass
-from ChinesePokerLib.classes.CardClass import CardClass
+from ChinesePokerLib.classes.Deck import Deck
+from ChinesePokerLib.classes.Card import Card
 import ChinesePokerLib.vars.CardConstants as CConst
 import ChinesePokerLib.vars.GameConstants as GConst
-from ChinesePokerLib.classes.UtilityClasses import VarChecker
-from ChinesePokerLib.classes.ExceptionClasses import CardGroupClassError
+from ChinesePokerLib.classes.Utility import VarChecker
+from ChinesePokerLib.classes.Exception import CardGroupError
 
 
 # Group classifications and Ranks
@@ -24,10 +24,8 @@ from ChinesePokerLib.classes.ExceptionClasses import CardGroupClassError
 # [6] 3 of a Kind
 # [7] 2 Pairs
 # [8] 1 Pair
-# [9] Nothing
-
-
-class BaseCardGroupClass:
+# [9] High card
+class BaseCardGroup:
   def __init__(self, game_type, card_type):
     self.game_type = game_type
     self.card_type = card_type
@@ -53,7 +51,7 @@ class BaseCardGroupClass:
   
 
 # Identify group type
-class CardGroupClassifier(BaseCardGroupClass):
+class CardGroupClassifier(BaseCardGroup):
   """[summary]
   """
   def __init__(self, game_type='CHINESE-POKER', card_type='STANDARD'):
@@ -835,7 +833,7 @@ class CardGroupClassifier(BaseCardGroupClass):
         cards ([type]): [description]
 
     Raises:
-        CardGroupClassError: [description]
+        CardGroupError: [description]
 
     Returns:
         [type]: [description]
@@ -843,10 +841,10 @@ class CardGroupClassifier(BaseCardGroupClass):
     set_size = len(cards)
     
     if set_size not in (3,5):
-      raise CardGroupClassError('classify_card_group only supports groups of 3 or 5 cards.')
+      raise CardGroupError('classify_card_group only supports groups of 3 or 5 cards.')
 
     if isinstance(cards[0], str):
-      cards = DeckClass().deal_custom_hand(cards)
+      cards = Deck().deal_custom_hand(cards)
     
     # Sort by deck card ind
     if sort_by_deck_card_ind:
@@ -1037,7 +1035,7 @@ class CardGroupClassifier(BaseCardGroupClass):
       combs = list(filter(condition, combs))
     return combs
 
-class CardGroupCode(BaseCardGroupClass):
+class CardGroupCode(BaseCardGroup):
   fill_value = GConst.CHINESE_POKER_default_code_fill_value
   universal_score_fill_value = 99
 
@@ -1268,7 +1266,7 @@ class CardGroupCode(BaseCardGroupClass):
     """[summary]
 
     Args:
-        cards (list): List of CardClass objects
+        cards (list): List of Card objects
     """
     if self.code[0] == 1: # Straight flush - rank by number
       pass

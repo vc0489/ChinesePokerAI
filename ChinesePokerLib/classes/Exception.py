@@ -5,11 +5,11 @@ class Error(Exception):
 
 
 
-############################
-### CardClass Exceptions ### 
-############################
+#######################
+### Card Exceptions ### 
+#######################
 class CardError(Error):
-  """Base class for exceptions relating to CardClass"""
+  """Base class for exceptions relating to Card"""
   pass
 
 class UnknownCardStrengthTypeError(CardError):
@@ -17,24 +17,24 @@ class UnknownCardStrengthTypeError(CardError):
   pass
 
 class InvalidCardNumberError(CardError):
-  """Raised when invalid number is provided when instantiating a CardClass object"""
+  """Raised when invalid number is provided when instantiating a Card object"""
   pass
 
 
 class InvalidCardSuitError(CardError):
-  """Raised when invalid suit is provided when instantiating a CardClass object"""
+  """Raised when invalid suit is provided when instantiating a Card object"""
   pass
 
 class InvalidCardFormatSpecError(CardError):
   """Raised when invalid specification passed into __format__"""
   pass
 
-############################
-### HandClass Exceptions ### 
-############################
+#######################
+### Hand Exceptions ### 
+#######################
 
 class HandError(Error):
-  """Base class for exceptions relating to HandClass"""
+  """Base class for exceptions relating to Hand"""
   pass
 
 class HandSplitInfoError(HandError):
@@ -45,23 +45,23 @@ class HandMissingScoringMethodError(HandError):
    """Raised when have scoring_tables but missing scoring_method"""
    pass 
 
-############################
-### GameClass Exceptions ### 
-############################
+#######################
+### Game Exceptions ### 
+#######################
 class GameError(Error):
-  """Base class for exceptions relating to GameClass"""
+  """Base class for exceptions relating to Game"""
   pass
 
 class InvalidGameModeError(GameError):
-  """Raised when invalid game mode is provided when instantiating a GameClass object"""
+  """Raised when invalid game mode is provided when instantiating a Game object"""
   pass
 
 
-###############################
-### StrategyClass Exceptons ###
-###############################
+##########################
+### Strategy Exceptons ###
+##########################
 class StrategyError(Error):
-  """Base class for exceptions relating to StrategyClass"""
+  """Base class for exceptions relating to Strategy"""
   pass
 
 class StrategyIDUsedError(StrategyError):
@@ -80,9 +80,9 @@ class DBWriteError(DBFunctionsError):
   pass
 
 
-#################################
-### CardGroupClass Exceptions ###
-#################################
-class CardGroupClassError(Error):
-  """Base class for exceptions relating to CardGroupClass"""
+############################
+### CardGroup Exceptions ###
+############################
+class CardGroupError(Error):
+  """Base class for exceptions relating to CardGroup"""
   

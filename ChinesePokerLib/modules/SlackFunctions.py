@@ -7,8 +7,6 @@ import sys
 
 #%%
 
-#slack_token = os.environ['SLACK_TOKEN']
-#slack_channel = '#chinese-poker'
 slack_icon = 'https://img.icons8.com/color/96/000000/cards.png'
 slack_user_name = 'Chokerot'
 

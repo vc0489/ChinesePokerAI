@@ -10,10 +10,10 @@ from datetime import datetime
 
 from wtforms.validators import ValidationError
 
-from ChinesePokerLib.classes.CardClass import CardClass
-from ChinesePokerLib.classes.DeckClass import DeckClass
-from ChinesePokerLib.classes.StrategyClass import ChinesePokerPctileScoreStrategyClass, ChinesePokerModelSetToGameScoreStrategyClass
-from ChinesePokerLib.classes.CardGroupClass import CardGroupClassifier, CardGroupCode
+from ChinesePokerLib.classes.Card import Card
+from ChinesePokerLib.classes.Deck import Deck
+from ChinesePokerLib.classes.Strategy import ChinesePokerPctileScoreStrategy, ChinesePokerModelSetToGameScoreStrategy
+from ChinesePokerLib.classes.CardGroup import CardGroupClassifier, CardGroupCode
 
 import ChinesePokerLib.modules.DataFunctions as DF
 import ChinesePokerLib.modules.DBFunctions as DBF
@@ -26,15 +26,15 @@ import ChinesePokerLib.modules.DBFunctions as DBF
 
 def random_hand():
 
-  deck = DeckClass()
+  deck = Deck()
   cards = [str(card) for card in deck.deal_cards()[0]]
   return cards
 
 def get_suggestions(cards, n_best_splits, unique_code_levels, strategyID=1, ret_card_strs=True):
-  deck = DeckClass()
+  deck = Deck()
   cards = deck.deal_custom_hand(cards)
 
-  strategy = ChinesePokerPctileScoreStrategyClass.init_from_db(
+  strategy = ChinesePokerPctileScoreStrategy.init_from_db(
     strategyID,
     split_gen_filter_by_score = True,
     sort_set_cards_by_group = True,
@@ -72,7 +72,7 @@ def submitted_cards_validator(form, to_validate):
   for card in cards:
     if len(card) < 2 or len(card) > 3:
       raise ValidationError(f'Invalid card {card}')
-    is_valid = CardClass.is_valid_suit_and_number(card[0], card[1:])
+    is_valid = Card.is_valid_suit_and_number(card[0], card[1:])
     if not is_valid:
       raise ValidationError(f'Invalid card {card}')
 
@@ -357,7 +357,7 @@ def get_computer_split(
   difficulty=100,
 ):
   if strategy is None:
-    strategy = ChinesePokerModelSetToGameScoreStrategyClass.load_strategy_from_file(
+    strategy = ChinesePokerModelSetToGameScoreStrategy.load_strategy_from_file(
   GConst.MODELDIR / 'FullGameScoreModelGradBoostHyperoptR1.pickle')
 
   splits_data = DF.get_splits_data_for_single_game_and_seat_from_db(game_id, com_seat_id, cards)
@@ -377,7 +377,7 @@ def get_computer_best_split(game_id, com_seat_id, strategy=None, cards=None):
 
   # Load strategy
   if strategy is None:
-    strategy = ChinesePokerModelSetToGameScoreStrategyClass.load_strategy_from_file(
+    strategy = ChinesePokerModelSetToGameScoreStrategy.load_strategy_from_file(
   GConst.MODELDIR / 'FullGameScoreModelGradBoostHyperoptR1.pickle')
 
   splits_data = DF.get_splits_data_for_single_game_and_seat_from_db(game_id, com_seat_id, cards)

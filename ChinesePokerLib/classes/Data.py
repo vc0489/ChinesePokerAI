@@ -7,21 +7,19 @@ import json
 from deprecated import deprecated
 import random
 
-from ChinesePokerLib.classes.DeckClass import DeckClass
-from ChinesePokerLib.classes.CardClass import CardClass
+from ChinesePokerLib.classes.Deck import Deck
+from ChinesePokerLib.classes.Card import Card
 import ChinesePokerLib.modules.DBFunctions as DBF
-from ChinesePokerLib.classes.CardGroupClass import CardGroupCode
-from ChinesePokerLib.classes.StrategyClass import ChinesePokerStrategyClass
-
-#from ChinesePokerLib.classes.StrategyClass import ChinesePokerPctileScoreStrategyClass
+from ChinesePokerLib.classes.CardGroup import CardGroupCode
+from ChinesePokerLib.classes.Strategy import ChinesePokerStrategy
 
 import ChinesePokerLib.vars.GameConstants as GameC 
 import ChinesePokerLib.vars.GlobalConstants as GlobC 
 
-class DataClass:
+class Data:
   def __init__(self, deck_type='STANDARD'):
     self.deck_type = deck_type
-    self.deck = DeckClass(deck_type)
+    self.deck = Deck(deck_type)
 
     return
 
@@ -106,7 +104,7 @@ class DataClass:
         f.write(dealt_cards_str + '\n')
     return
 
-  def yield_dealt_hands_from_text_dump(self, text_file=None, deck_obj=DeckClass(), load_from=None, load_to=None):
+  def yield_dealt_hands_from_text_dump(self, text_file=None, deck_obj=Deck(), load_from=None, load_to=None):
     if text_file is None:
       text_file = self.get_latest_dealt_hands_dump()
 
@@ -196,9 +194,6 @@ class DataClass:
         dealt_hands_text_file = self.get_latest_dealt_hands_dump()
       dealt_cards_generator = self.yield_dealt_hands_from_text_dump(dealt_hands_text_file)
 
-    #if strategy is None:
-    #  strategy = ChinesePokerPctileScoreStrategyClass(split_gen_filter_by_score=False)
-    
     while 1:
       deal_no, dealt_cards = next(dealt_cards_generator)
 
@@ -394,7 +389,7 @@ class DataClass:
           s2code = CardGroupCode([code for code in s2code if code is not None])
           s3code = CardGroupCode([code for code in s3code if code is not None])
           
-          split_info_factory = ChinesePokerStrategyClass.ranked_split_info_factory
+          split_info_factory = ChinesePokerStrategy.ranked_split_info_factory
 
           split_info = split_info_factory(
             None,

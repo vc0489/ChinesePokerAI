@@ -306,17 +306,23 @@ def get_computer_split():
   
 @app.route('/post/update_set_descriptions', methods=['POST'])
 def update_set_descriptions():
-  data = request.get_json()
-  print(data)
+  """Handles post request to get set descriptions. 
+  Also checks whether split is valid - is front < middle < back?
 
+  Returns:
+      json: Contains descriptions, codes and whether split is valid.
+  """
+  data = request.get_json()
+  
   cards = utils.card_ids_to_cards(session['game_cards'][0], data['cardIds'], card_img_id_prefix)
-  print(cards)
 
   group_code, group_desc, _ = utils.classify_group(cards)
   target_set = data['targetSet']
   data[f"set{target_set}Code"] = group_code
+  
+  # Check is split is valid
   is_valid = utils.check_valid_split(data['set1Code'],data['set2Code'],data['set3Code'])
-  print(is_valid)
+  
   return jsonify({'Description': group_desc, 'SetCode': str(group_code.code), 'ValidSplit':int(is_valid)})
 
 @app.route('/post/end_game', methods=['POST'])

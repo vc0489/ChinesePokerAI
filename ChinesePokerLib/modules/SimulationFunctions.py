@@ -102,38 +102,6 @@ def gen_code_combs_set(strategy=None, score_round_fac=1):
     existing_scores[0].append(round(score_set1/score_round_fac))
   return combs
 
-"""
-@deprecated
-def gen_all_possible_strategy_score_combs(strategy, round_fac=1):
-  combs = []
-  existing_scores = [[], [], []]
-  #prev_scores = (None, None, None)
-  
-  for code_set1, score_set1 in strategy.score_dicts[0].items():
-    print(score_set1)
-    if round(score_set1/round_fac) in existing_scores[0]:
-      continue
-    
-    existing_scores[1] = []
-    for code_set2, score_set2 in strategy.score_dicts[1].items():
-      if (round(score_set2/round_fac) in existing_scores[1]) or (CardGroupCode(code_set2) < CardGroupCode(code_set1)):
-        continue
-      
-      
-      existing_scores[2] = []
-      for code_set3, score_set3 in strategy.score_dicts[2].items():
-        if (round(score_set3/round_fac) in existing_scores[2]) or (CardGroupCode(code_set3) < CardGroupCode(code_set2)):
-          continue
-        
-        combs.append((code_set1, code_set2, code_set3, score_set1, score_set2, score_set3))
-        existing_scores[2].append(round(score_set3/round_fac))
-        #prev_scores = (round(score_set1/round_fac,1), round(score_set2/round_fac,1), round(score_set3/round_fac,1))
-      
-      existing_scores[1].append(round(score_set2/round_fac))
-    existing_scores[0].append(round(score_set1/round_fac))
-  return combs
-"""
-
 def gen_best_split_data(
   n_hands,
   strategy=None,

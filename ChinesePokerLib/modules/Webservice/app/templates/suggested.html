@@ -16,7 +16,7 @@
 {% endblock %}
 
 {% block content %}
-    <h1>Cards in Hand: </h1>
+    <h2>Cards in Hand: </h2>
     {{ displayCardSet(sel_card_img_filenames) }}
     <!--
     {% for suit_list in sel_card_img_filenames %}
@@ -27,7 +27,7 @@
     {% endfor %}
     -->
     <hr>
-    <h1>Suggested Splits: </h1>
+    <h2>Suggested Splits: </h2>
     <table>
         <tr>
             <th>Split</th>
@@ -45,9 +45,12 @@
                     <img src="data:image/png;base64, {{ img_str }}", height="66">
                 </th>
             {% endfor %}
+            
+            <!--
             <th>
             <a href="{{ url_for('simulate', split_no=loop.index) }}">Simulate</a>
             </th>
+            -->
         </tr>
         {% endfor %}
     </table>

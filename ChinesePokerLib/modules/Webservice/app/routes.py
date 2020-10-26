@@ -15,18 +15,24 @@ card_img_id_prefix = 'c'
 @app.route('/')
 @app.route('/index')
 def index():
-    user = {'username':'Guest'}
-    hand_queries = [
-      {'cards':'SA,SK,SQ,SJ,S10,S9,S8,S7,S6,S5,S4,S3,S2'},
-      {'cards':'HA,HK,HQ,HJ,H10,H9,H8,H7,H6,H5,H4,H3,H2'},
-      {'cards':'DA,DK,DQ,DJ,D10,D9,D8,D7,D6,D5,D4,D3,D2'},
-      {'cards':'CA,CK,CQ,CJ,C10,C9,C8,C7,C6,C5,C4,C3,C2'}
-    ]
+    #user = {'username':'Guest'}
+    #hand_queries = [
+    #  {'cards':'SA,SK,SQ,SJ,S10,S9,S8,S7,S6,S5,S4,S3,S2'},
+    #  {'cards':'HA,HK,HQ,HJ,H10,H9,H8,H7,H6,H5,H4,H3,H2'},
+    #  {'cards':'DA,DK,DQ,DJ,D10,D9,D8,D7,D6,D5,D4,D3,D2'},
+    #  {'cards':'CA,CK,CQ,CJ,C10,C9,C8,C7,C6,C5,C4,C3,C2'}
+    #]
     
-    return render_template('index.html', title='Home', user=user, hand_queries=hand_queries)
+    #return render_template('index.html', title='Home', user=user, hand_queries=hand_queries)
+    return render_template('index.html', title='Home')
 
     #return "Hello, World!"
 
+
+@app.route('/about')
+def about():
+  return render_template('about.html', title='About')
+  
 @app.route('/suggest', methods=['GET', 'POST'])
 def suggest():
   card_img_prefix = 'cardimg-'
@@ -301,7 +307,6 @@ def get_computer_split():
   output[f'SplitInds'] = com_split.Inds
   output[f'SplitCodes'] = [str(code.code) for code in com_split.Codes]
   
-  
   return jsonify(output)
   
 @app.route('/post/update_set_descriptions', methods=['POST'])
@@ -357,12 +362,10 @@ def get_leaderboard():
     show_top = data['ShowTop']
   else:
     show_top = 10
-  #print(app_game_ID)
 
   leaderboard_info = utils.gen_leaderboard(show_top, app_game_ID)
   print(leaderboard_info)
   return jsonify({'Leaders':leaderboard_info})
-
 
 @app.route('/post/gen_app_game_id', methods=['POST'])
 def get_app_game_id():

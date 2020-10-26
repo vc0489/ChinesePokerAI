@@ -102,32 +102,37 @@
     </p>
 
     <p>
-    The ChinesePokerTips <a href="{{ url_for('play_game') }}">game</a> uses the 1-6 scoring method in which three additional points (on top of the three points gained from set-by-set comparison) are awarded to a player for winning all three sets against an opponent.
-    Three points are deducted from the opponent who ends up with negative six points from the head-to-head.
+    The ChinesePokerTips <a href="{{ url_for('play_game') }}">game</a> uses the 1-6 scoring method in which three additional points (on top of the three points gained from set-by-set comparison) are awarded to a player for winning all three sets against (called "scooping") an opponent.
+    Three points are deducted from the opponent who was "scooped", leaving him/her with negative six points from the head-to-head.
     No other bonuses are awarded in the ChinesePokerTips game variant and hence the sum of all player scores is always zero after each round.
     </p>
     
     <p>
     To create this web application I wrote a Python engine that can simulate rounds of Chinese Poker. 
-    I then trained a gradient boosting regression model which takes in a hand of cards split into the three sets and outputs a quantity representing its overall strength.
-    This model is used to power the AI in the game.
+    I then trained a gradient boosting regression model via an iterative procedure which takes in a hand of cards split into the three sets and outputs a quantity representing its overall strength.
+    This model is used to power the AI strategy in the game.
+    Details behind the development of the strategy can be found <a href="{{ url_for('about') }}">here</a>.
     In the near future, some of the game engine functionality will be made available via an API for any interested developers to use.
     </p>
 
     <p>
-    Want some suggestions on how to split your cards? Head over to <a href="{{ url_for('suggest') }}">Pick</a>!
-    Want to test your skill at choosing the perfect split? Head over to <a href="{{ url_for('play_game') }}">Play</a>!
+        <ul>
+            <li>
+                Want to know the story behind ChinesePokerTips? Head over to <a href="{{ url_for('about') }}">About</a>!
+            </li>
+            <li>
+                Want some suggestions on how to split your cards? Head over to <a href="{{ url_for('suggest') }}">Pick</a>!
+            </li>
+            <li>
+                Want to test your skill at choosing the perfect split? Head over to <a href="{{ url_for('play_game') }}">Play</a>!
+            </li>
+        </ul>
+    </p>
+    <p>
     Good luck and have fun!
     </p>
     
     
     </div>
-    <!--
-    <h1>Hello, {{ user.username }}!</h1>
-
-    <h2>Recent hand queries:</h2>
-    {% for query in hand_queries %}
-    <div><p>{{ query.cards }}</b></p></div>
-    {% endfor %}
-    -->
+    
 {% endblock %}

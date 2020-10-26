@@ -52,6 +52,7 @@ for (let pI=0; pI<4; pI++) {
 // Game variables //
 //----------------//
 const setLengths = [3,5,5];        // Number of cards per set
+const setNames = ['Front','Middle','Back']
 
 var gameID;                        // Stores hand GameID of current round
 var seatID;                        // Stores player seatID of current round
@@ -650,7 +651,7 @@ function clearSetDescriptions(userOnly=true) {
     for (let comID=1; comID<=3; comID++) {
       for (let sI=1; sI<=3; sI++) {
         //htmlContent = constructHeaderContent(sI);
-        $( "#COM" + comID.toString() + " .header" + sI.toString() ).html('Set ' + sI.toString());
+        $( "#COM" + comID.toString() + " .header" + sI.toString() ).html(setNames[sI-1]);
       }
     }
   }
@@ -734,7 +735,7 @@ function playHand() {
 
 function constructHeaderContent(setNo, desc=undefined) {
   setLength = setLengths[setNo-1];
-  html_content = 'Set ' + setNo.toString() + ' (' + setLength.toString() + ' cards)';
+  html_content = setNames[setNo-1] + ' (' + setLength.toString() + ' cards)';
   if (typeof desc !== "undefined") {
     html_content += '<br>' + desc;
   }
@@ -830,7 +831,7 @@ function updateScoreTable(gameScores, compRes) {
       tableEl = $( "<table></table>" )
       for (let sI=0; sI<3; sI++) {
         rowEl = $( "<tr></tr>" )
-        rowEl.append("<td>Set " + (sI+1).toString() + "</td>");
+        rowEl.append("<td>" + setNames[sI] + "</td>");
 
         forDesc = allSplitDesc[p1][sI]
         agaDesc = allSplitDesc[p2][sI]
@@ -947,7 +948,7 @@ $( function() {
           }).done(function(response) {
             
             allSplitDesc[0][targetInd] = response['Description'];
-            html_content = 'Set ' + targetIdNum + 
+            html_content = setNames[targetIdNum-1] + 
               ' (' + targetSetLength.toString() + ' cards)' + 
               '<br>' + response['Description'];
             $('#USER > .header' + targetIdNum).html(html_content);
@@ -970,7 +971,7 @@ $( function() {
         sourceCurLength = n_cards_in_set[sourceInd];
         sourceSetLength = setLengths[sourceInd];
         if (sourceCurLength == sourceSetLength) {
-          html_content = 'Set ' + sourceIdNum + ' (' + sourceSetLength.toString() + ' cards)';
+          html_content = setNames[sourceIdNum-1] + ' (' + sourceSetLength.toString() + ' cards)';
           $('#USER > .header' + sourceIdNum).html(html_content);
         }
         n_cards_in_set[sourceInd]--;

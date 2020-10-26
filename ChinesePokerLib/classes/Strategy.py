@@ -22,13 +22,7 @@ from ChinesePokerLib.modules.UtilityFunctions import flattened_list, nth_largest
 import ChinesePokerLib.vars.GameConstants as GConst
 import ChinesePokerLib.vars.GlobalConstants as GlobConst
 
-
-class Strategy:
-  def __init__(self):
-    
-    return
-
-class ChinesePokerStrategy(Strategy):
+class ChinesePokerStrategy():
   game_type = GConst.ChinesePokerKey
   split_into = GConst.GEN_hands_split_into[game_type]
   strategy_table = GConst.CHINESE_POKER_db_consts['split_strategies_table']
@@ -435,8 +429,8 @@ class ChinesePokerStrategy(Strategy):
     cards,
     filter_by_score=False,
   ):
-    """Similar to _yield_unfiltered_systematic_split except for various logic to 
-    use scores to filter out splits.
+    """Generator that yields feasible splits given a hand. 
+    Filtering algorithm can be applied to use scores to reduce number of splits generated.
     
     Arguments:
         cards    
@@ -445,12 +439,13 @@ class ChinesePokerStrategy(Strategy):
         [type] -- [description]
     """
     
-    # Unpack parameters
+    # Unpack parameters for filtering
     if filter_by_score:
       filter_score_buffer = self.split_gen_params['FilterScoreBuffer']
       if filter_score_buffer is None:
         filter_score_buffer = 0
       filter_strat = self.split_gen_params['FilterStrategy']
+      max_score = None
 
     # FIRST, find all possible final set options
     min_top_level_code = self.classifier.top_level_code_from_label('OnePair')
@@ -462,12 +457,7 @@ class ChinesePokerStrategy(Strategy):
 
     accepted_splits = []
     seq_no = 1
-
-    if filter_by_score:
-      max_score = None
-    
     max_first_set_code = CardGroupCode([999,0])
-    # Merge final set options is code exactly the same
     
     final_setI = 1
     cur_code = final_set_options[0][0]
@@ -486,7 +476,7 @@ class ChinesePokerStrategy(Strategy):
 
     # SECOND, loop over final set codes. 
     # For each final code, find all possible valid second set options
-    # (max code being the code of final set in consideration). 
+    # (max code being the code of final set under consideration). 
     for merged_final_setI, merged_final_set_option in enumerate(merged_final_set_options):
       # This is shared between all options within the merged set
       final_set_code = merged_final_set_option[0][0]

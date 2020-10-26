@@ -2,17 +2,25 @@
   font-family: Arial, Helvetica, sans-serif;
 }
 
+#main-content {
+  max-width: 45em;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 a:hover, a:active {
   color: orange;
 }
 
 .navbar-full {
   display: grid;
-  grid-template-columns: 1fr repeat(5, minmax(auto, 150px)) 1fr;
+  grid-template-columns: 1fr repeat(6, minmax(auto, 150px)) 1fr;
   grid-template-rows: 30px 5px;
   grid-template-areas:
-    "space1 logo title home suggest play space2"
-    "sep sep sep sep sep sep sep";
+    "space1 logo title home about suggest play space2"
+    "sep sep sep sep sep sep sep sep";
   text-align: center;
 }
 .navbar-main {
@@ -29,6 +37,10 @@ a:hover, a:active {
 }
 #nav-title {
   grid-area: title;
+  flex-grow: 1;
+}
+#nav-about {
+  grid-area: about;
   flex-grow: 1;
 }
 #nav-home {

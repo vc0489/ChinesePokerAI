@@ -12,3 +12,32 @@ a:visited {
 th { 
   padding: 5px;
 }
+
+
+h2 {
+  text-align: center;
+}
+.card-set {
+  width: 460px;
+  height: 265px;
+  margin: 0 auto;
+  clear: right;
+}
+
+.card-set img {
+  float: left;
+}
+
+table {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.center {
+  text-align: center;
+  padding-top: 20px;
+}
+
+input {
+  font-size: 18px;
+}

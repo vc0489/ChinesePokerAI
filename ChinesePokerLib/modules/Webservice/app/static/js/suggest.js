@@ -1,3 +1,10 @@
+window.onload = initialise;
+
+function initialise() {
+  x = document.getElementById("top-nav-btn-split");
+  x.classList.add("active");
+}
+
 function selectRandom() {
   var ids = $(".input-card-image").toArray();
   console.log(ids)
@@ -24,18 +31,16 @@ return getRandomNumbers(0, arr_len, n)
 }
 
 function getRandomNumbers(lower_bound, upper_bound, n) {
-var random_numbers = [];
+  var random_numbers = [];
 
-while (random_numbers.length < n) {
-  var random_number = Math.floor(Math.random()*(upper_bound - lower_bound) + lower_bound);
-  if (random_numbers.indexOf(random_number) == -1) { 
-      // Yay! new random number
-      random_numbers.push( random_number );
+  while (random_numbers.length < n) {
+    var random_number = Math.floor(Math.random()*(upper_bound - lower_bound) + lower_bound);
+    if (random_numbers.indexOf(random_number) == -1) { 
+        // Yay! new random number
+        random_numbers.push( random_number );
+    }
   }
-}
-return random_numbers
-
-
+  return random_numbers
 }
 function getRandom(arr, n) {
   var result = new Array(n),

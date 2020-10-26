@@ -1,10 +1,14 @@
 {% extends "base.html" %}
 
+{% block headblock %}
+<script src="{{ url_for('static', filename='js/about.js') }}"></script>
+{% endblock %}
+
 {% block content %}
-  <div id="main-content">
+  <div class="main-content">
     
     <h2>Background</h2>
-
+    <p class="text">
     The game of Chinese poker has been part of my life since I was a small kid growing up in Taiwan.
     It was a game my family often played at home, particularly during festive periods such as Lunar New Year.
     Perhaps what makes the game a timeless classic to us is that it is an easy game for anyone to pick up, yet there is a surprising depth of strategy behind splitting the cards.
@@ -12,25 +16,34 @@
     While I would consider my ability to be of decent standard, I am not quite at the level of some of my elder relatives.
     I have recently pondered whether machine learning can provide some insight on how to get over the hump. 
     Hence, ChinesePokerTips was born!
-     
+    </p> 
+
     <h2>Methodology</h2>
+    <p class="text">
     The goal was to use train a machine learning model that could be used as part of a card splitting strategy.
     One of the first problems was to determine a suitable implementation of the strategy - what are the steps going from 13 dealt cards to the chosen 3-5-5 split and where would be model sit within this strategy?
     The implementation chosen is as follows:
     <!--Convert into flow chart-->
     <ol>
-      <li>Algorithm that takes in 13 cards and spits out list of feasible splits to be considered</li>
+      <li>Algorithm that takes in 13 cards and spits out list of reasonable splits to be considered</li>
       <li>Machine learning model that takes in a split and outputs a score representing the strength of the hand</li>
       <li>Method that chooses the final split based on the score</li>
     </ol>
+    </p>
     
+    <p class="text">
     Some of the major issues that I encountered along the way and how I solved them are outlined in the following sections.
-
-    <h3>Algorithm to generate list of feasible splits</h3>
+    </p>
+    
+    <h3>Algorithm to generate list of reasonable splits</h3>
+    <p class="text">
     Given a hand of 13 cards there are 72072 [13!/(3!*5!*5!)] ways of splitting into 3-5-5 without any restrictions.
     Most of the splits would not be considered by any reasonable player let alone permitted under the rules.
     In addition, it would not be practical to generate and consider all possible splits for a large number of hands due to computational expense. 
-    This led me to develop an algorithm that can take in a 13 card hand and generate a list of feasible splits.
+    This led me to develop an algorithm that can take in a 13 card hand and generate a list of reasonable splits.
+    </p>
+
+    <p class="text">
     This is the algorithm:
     <ul>
       <li>
@@ -45,7 +58,7 @@
       </li>
       <ul>
         <li>
-          If max_front_poker_rank exists and it is higher than the poker rank of the current back set option is weaker than it then break out of the loop (this ends the algorithm). 
+          If <span class="monospace">max_front_poker_rank</span> exists and it is higher than the poker rank of the current back set option is weaker than it then break out of the loop (this ends the algorithm). 
         </li>
         <li>
           Identify all possible 5-card sets out of the remaining 8 cards that are lower or equal in poker rank to the current final set and sort in decreasing poker rank order. 
@@ -56,7 +69,7 @@
         </li>
         <ul>
           <li>
-            If max_front_poker_rank exists it is higher than the poker rank of the current middle set option is weaker than it then break out of the loop.
+            If <span class="monospace">max_front_poker_rank</span> exists it is higher than the poker rank of the current middle set option is weaker than it then break out of the loop.
           </li>
           <li>
             If the front set formed of the remaining 3 cards has a higher poker rank than the current middle set go straight to the next loop iteration.
@@ -85,7 +98,7 @@
         <ul>
           <li>
             <strong>Either</strong> the front set is better than all front sets currently in the output list. 
-            In this case also update max_front_poker_rank with the front set poker rank of the split added to the output list. 
+            In this case also update <span class="monospace">max_front_poker_rank</span> with the front set poker rank of the split added to the output list. 
           </li>
           <li>
             <strong>Or</strong> the middle set is better than all middle sets currently in the output list.
@@ -93,50 +106,58 @@
         </ul>
       </ul>
     </ul>
+    </p>
 
-    This algorithm may seem complicated, but it helped generate list of reasonable splits for tens of thousands of hands within a relatively short amount of time.
+    <p class="text">
+    It should be stressed that there are perfectly legal splits that will be generated by this algorithm. 
+    However such splits are those which are weaker in rank than another possible split across all three sets and hence should not be considered by a reasonable player.
+    This is why the output is referred to as the list of <em>reasonable</em> splits.
+    This algorithm may seem complicated, but it was key for generating list of reasonable splits for tens of thousands of hands within a relatively short amount of time.
+    </p>
 
     <h3>Choosing suitable inputs of the model</h3>
-    <p>
+    <p class="text">
     A suitable way of representing split hands can significantly reduce the model complexity required to model its strength.
     One possible way to represent a split hand is to use (a lot of) dummy variables, one for each of the 52 cards per set. 
     This is rather easy to set up but it would mean the model would be required to be sophisticated enough (perhaps a deep neural network) to figure out the relationships of the cards in discrete poker hand terms.
     </p>
     
-    <p>
+    <p class="text"> 
     In consideration of the above, I took the approach of pre-transforming each set of cards into score values that represented the poker rank.
     The scores are based on probabilities of having corresponding rank or higher contained within some chosen number of cards.
     As an example, a middle set full house with triple 5s could be represented by probabilities of having a set of 5 cards with that rank or better within hands of 7, 8 and 9 cards. 
-    I henceforth refer to these type of probabilities scores as x-out-of-y percentiles; in the example above the scores are the 5-out-of-7, 5-out-of-8 and 5-out-of-9 percentiles, respectively.
+    I henceforth refer to these type of probabilities scores as <em>x-out-of-y percentiles</em>; in the example above the scores are the 5-out-of-7, 5-out-of-8 and 5-out-of-9 percentiles, respectively.
     The probabilities were empirically estimated by running Monte Carlo simulations with large nunber of samples.
     </p>
 
     <h3>What target should the model be trained on?</h3>
+    <p class="text">
     A suitable target variable is also required for the model to be useful in the context of a split picking strategy.
     A logical and easy to interpret output would be an expected game score given an input split.
     However, since the game score is dependent on the opponent strategy (and cards), it would not be possible to estimate expected score without a strategy to begin with it.
     This inspired me to try a iterative Monte Carlo approach with the aim of converging to a robust strategy. 
     This is described in the model training approach section.
-
+    </p>
+     
     <h3>Model training approach</h3>
-    <p>
+    <p class="text">
     I designed an iterative Monte Carlo approach to train the model.
     To being with, a baseline strategy of choosing the split based on a single probability score for each set.
     A straight average over the three sets was then taken to yield a final score for each split and the strategy simply picked the split with the highest average score.
     The probability scores chosen for the front, middle and back sets were the 3-out-of-5, 5-out-of-8 and 5-out-of-11 percentiles, respectively. 
-    These were chosen based on intuition; a reasonable player would usually not choose the best 5 card set out of the full 13 card hand as the back set as it is important to have a balanced split.
+    These were chosen based on intuition; a reasonable player would usually not choose the best 5 card set out of the full 13 card hand as the back set as it is important to ensure a balanced split.
     This baseline strategy is very naive as it treats the three sets independently and hence doesn't take into account the possibility of scooping.
-    But the hope was that successive strategies developed during the iterative process will be able to account for scooping leading to an optimal strategy.
+    But the hope was that successive models trained during the iterative process will be able to account for scooping leading to an optimal strategy.
     </p>
     
-    <p>
-    With a baseline strategy now in place, it was now possible to take a representative subset of all possible splits and run simulated Chinese poker rounds with the baseline strategy and obtain game scores.
+    <p class="text">
+    With a baseline strategy now in place, it was then possible to take a representative subset of all possible splits and run simulated Chinese poker rounds with splits picked by the strategy and obtain game scores.
     As the scores for a single round are highly dependent on the opponent cards, 1000 rounds were played per split and the game scores were averaged over all rounds to yield expected game scores - this is the Monte Carlo part of the training approach.
     The expected game scores were then used as the target for training the incremental model.
-    In each subsequent iteration, the incremental model was then used in the strategy used to generate an updated set of expected game scores which was in turn used to fit the subsequent.
+    In the subsequent iteration, the incremental model was then used in the strategy used to generate an updated set of expected game scores, which were in turn used to train the next model and the process was repeated until "convergence" was achieved.
     </p>
-    
-    <p>
+
+    <p class="text">
       The quality of the models were evaulated based on a couple of criteria.
       <ul>
         <li>
@@ -155,25 +176,38 @@
       </ul>
     </p>
 
-    <p>
+    <p class="text">
     In initial runs of the iterative training approach, linear regression was used.
     Various attempts of feature engineering were made to account for scooping and improve the model:
     <ul>
       <li>
-        Add interation terms between the x-out-of-y scores and features such as the maximum and minimum x-out-of-y scores across the sets. 
+        Add interation terms between the x-out-of-y percentiles and features such as the maximum and minimum x-out-of-y scores across the sets. 
         These were meant to provide a way for the model to account for scooping.
       </li>
       <li>
-        Include power transforms of the x-out-of-y scores to account for non-linearity between scores and expected game scores.
+        Include power transforms of the x-out-of-y percentiles to account for non-linearity between scores and expected game scores.
       </li>
     </ul>
-    However, while some of these new features reduce the residuals and improve the models, the improvements were marginal and the resulting strategies remained poor at accounting for scooping.
+    However, while some of these new features did reduce the residuals and improve the models, the improvements were marginal and the resulting strategies remained poor at accounting for scooping.
     </p>
 
-    <p>
-    Subsequent runs that utilised ensemble-based regression techinques with pre-tuned hyperparameters (using the Bayesian library hyperopt) were far more lucrative in yielding robust strategies.
-    Random forest and gradient boosting models have drastically reduced residuals, and strategies powered by these models noticeably outperform earlier linear regression based strategies in simulation.
+    <p class="text">
+    Subsequent runs that utilised ensemble-based regression techinques with pre-tuned hyperparameters (using the Bayesian Tree of Parzen Estimators algorithm using the <a href="https://github.com/hyperopt/hyperopt">hyperopt</a> optimisation library) were far more lucrative in yielding robust strategies.
+    Random forest and gradient boosted models have drastically reduced residuals, and strategies powered by these models noticeably outperform earlier linear regression based strategies in simulation.
+    In addition, convergence of the model was quickly observed within a few iterations - there was no statistically significant improvement in simulated model performance beyond that.
     </p>
-  </p>
+
+    <h2>Current deployment setup</h2>
+    <p class="text">
+    The model currently powering the AI strategy is a random forest model which performs no worse than the latest gradient boosted model but takes up much less memory.
+    At 100 ability the strategy simply picks the split with the highest expected game score as predicted by the model.
+    As the ability is lowered, increasing amount of randomness is added to the selection process.
+    </p>
+
+    <p class="text">
+    This web application is currently hosted on an AWS EC2 instance and accesses an AWS MySQL RDS DB instance for data storage.
+    On the EC2 instance a flask application is served by a <a href="https://gunicorn.org/">Gunicorn</a> WSGI server and <a href="https://www.nginx.com/">NGINX</a> is used as a reverse proxy.
+    </p>
+  
   </div>
 {% endblock %}

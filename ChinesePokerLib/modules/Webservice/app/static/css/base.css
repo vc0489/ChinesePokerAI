@@ -1,8 +1,17 @@
 * {
   font-family: Arial, Helvetica, sans-serif;
+  color: black;
 }
 
-#main-content {
+a {
+  color: blue;
+}
+
+body {
+  background-color: #41B3A3;
+}
+
+.main-content {
   max-width: 45em;
   margin-top: 10px;
   margin-bottom: 10px;
@@ -11,7 +20,70 @@
 }
 
 a:hover, a:active {
-  color: orange;
+  color: white;
+}
+
+.top-nav {
+  background-color: #C38D9E;
+  overflow: hidden;
+}
+
+.top-nav a {
+  float: left;
+  display: block;
+  color: black;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 17px;
+}
+
+.top-nav a.active {
+  background-color: #E8A87C;
+}
+
+.top-nav a:hover {
+  background-color: white;
+}
+
+.top-nav .icon {
+  display: none;
+}
+@media screen and (max-width: 600px) {
+  .top-nav a:not(:first-child) {
+    display: none;
+  }
+  .top-nav a.icon {
+    float: right;
+    display: block;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .top-nav.responsive {
+    position: relative;
+  }
+  .top-nav.responsive .icon {
+    position: absolute;
+    right: 0;
+    top: 0;
+  }
+  .top-nav.responsive a {
+    float: none;
+    display: block;
+    text-align: left;
+  }
+  .top-nav.responsive {
+    float: none;
+  }
+  .top-nav.responsive {
+    position: relative;
+  }
+  .top-nav.responsive {
+    display: block;
+    width: 100%;
+    text-align: left;
+  }
 }
 
 .navbar-full {
@@ -61,4 +133,12 @@ a:hover, a:active {
 
 .bottom-bar {
   text-align: center;
+}
+
+.monospace {
+  font-family: "Courier New", Courier, monospace;
+}
+
+p.text {
+  text-align: justify;
 }

@@ -3,6 +3,7 @@
 
 {% block headblock %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/suggested.css') }}">
+<script src="{{ url_for('static', filename='js/suggest.js') }}"></script>
 
 {% endblock %}
 
@@ -17,7 +18,8 @@
         <br>
     {% endfor %}
     -->
-    <hr>
+    <br>
+
     <h2>Suggested Splits: </h2>
     <table>
         <tr>
@@ -47,4 +49,10 @@
         </tr>
         {% endfor %}
     </table>
+
+<div class="center">    
+<form action="{{ url_for('suggest') }}">
+    <input type="submit" value="New hand" />
+</form>
+</div>
 {% endblock %}

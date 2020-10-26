@@ -2,18 +2,19 @@
 
 {% block headblock %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+<script src="{{ url_for('static', filename='js/index.js') }}"></script>
 {% endblock %}
 {% block content %}
-    <div id="main-content">
+    <div class="main-content">
     Welcome to ChinesePokerTips - where machine learning meets Chinese poker!
     
-    <p>
+    <p class="text">
     <a href="https://en.wikipedia.org/wiki/Chinese_poker">Chinese poker</a> is a card game based on <a href="https://en.wikipedia.org/wiki/List_of_poker_hands">poker hand rankings</a> for two to four players.
     In a round of Chinese poker, each player has to split their 13 cards face down into three sets - a "front" set of three, a "middle" set of five and a "back" set of five.
     The only restriction of the split is that the sets from front to back have to increase in rank.
     </p>
     
-    <p>
+    <p class="text">
     For example this is a valid split:
     <table>
         <tr>
@@ -53,7 +54,7 @@
     </table>
     </p>
     
-    <p>
+    <p class="text">
     This is not a valid split because the middle set is higher in rank than the back set:
     <table>
         <tr>
@@ -93,42 +94,42 @@
     </table>
     </p>
 
-    <p>
+    <p class="text">
     After all players have split their cards, the hands are revealed and the splits are compared set-by-set to determine the score.
     The front sets are compared against each other, the middle sets compared against each other and so on.
-    In each comparison, the player with the stronger set gain a point from the player with the weaker set.
+    In each comparison, the player with the stronger set gains a point from the player with the weaker set.
     If sets are equally ranked, no points are exchanged.
     Depending on the game variant, additional points may be awarded for other reasons such as winning all sets against an opponent or for a special hand like having all flushes.
     </p>
 
-    <p>
+    <p class="text">
     The ChinesePokerTips <a href="{{ url_for('play_game') }}">game</a> uses the 1-6 scoring method in which three additional points (on top of the three points gained from set-by-set comparison) are awarded to a player for winning all three sets against (called "scooping") an opponent.
     Three points are deducted from the opponent who was "scooped", leaving him/her with negative six points from the head-to-head.
     No other bonuses are awarded in the ChinesePokerTips game variant and hence the sum of all player scores is always zero after each round.
     </p>
     
-    <p>
+    <p class="text">
     To create this web application I wrote a Python engine that can simulate rounds of Chinese Poker. 
-    I then trained a gradient boosting regression model via an iterative procedure which takes in a hand of cards split into the three sets and outputs a quantity representing its overall strength.
-    This model is used to power the AI strategy in the game.
+    I then trained several ensemble regression models via an iterative procedure which takes in a hand of cards split into the three sets and outputs a quantity representing its overall strength.
+    The model currently powering the AI is a random forest model with hyperparamters tuned using the Bayesian Tree of Parzen Estimators algorithm, implemented by the <a href="https://github.com/hyperopt/hyperopt">hyperopt</a> library.
     Details behind the development of the strategy can be found <a href="{{ url_for('about') }}">here</a>.
     In the near future, some of the game engine functionality will be made available via an API for any interested developers to use.
     </p>
 
-    <p>
+    <p class="text">
         <ul>
             <li>
                 Want to know the story behind ChinesePokerTips? Head over to <a href="{{ url_for('about') }}">About</a>!
             </li>
             <li>
-                Want some suggestions on how to split your cards? Head over to <a href="{{ url_for('suggest') }}">Pick</a>!
+                Want some suggestions on how to split your cards? Head over to <a href="{{ url_for('suggest') }}">Split</a>!
             </li>
             <li>
                 Want to test your skill at choosing the perfect split? Head over to <a href="{{ url_for('play_game') }}">Play</a>!
             </li>
         </ul>
     </p>
-    <p>
+    <p class="text">
     Good luck and have fun!
     </p>
     

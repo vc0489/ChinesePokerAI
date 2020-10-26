@@ -12,15 +12,22 @@
         src="https://code.jquery.com/jquery-3.5.1.js"
         integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
         crossorigin="anonymous"></script>
+      <script src="{{ url_for('static', filename='js/base.js') }}"></script>
       {% block headblock %}{% endblock %}
     </head>
     <body>
+        <nav class="top-nav" id="top-nav-bar">
+          <a id="top-nav-btn-home" href="{{ url_for('index') }}">Home</a>
+          <a id="top-nav-btn-about" href="{{ url_for('about') }}">About</a>
+          <a id="top-nav-btn-split" href="{{ url_for('suggest') }}">Split</a>
+          <a id="top-nav-btn-play" href="{{ url_for('play_game') }}">Play</a>
+          <a href="javascript:void(0);" style="font-size:15px;" class="icon" onclick="navIcon()">&#9776;</a>
+</div>
+        </nav>
+        
+        <!--
         <div class="navbar-full">
-          <!--
-          <div id="nav-logo">
-            Logo
-          </div>
-          -->
+          
           <div id="nav-title">
             ChinesePokerTips 
           </div>
@@ -41,26 +48,20 @@
             <hr>
           </div>
         </div>
-        
-        
-        <!--
-        {% with messages = get_flashed_messages() %}
-        {% if messages %}
-        <ul>
-            {% for message in messages %}
-            <li>{{ message }}</li>
-            {% endfor %}
-        </ul>
-        {% endif %}
-        {% endwith %} 
         -->
+        
+       
         {% block content %}{% endblock %}
         
         <div class="bottom-bar">
           <hr>
           <p>
-            Any questions, suggestions or feedback? Send a message to <a href = "mailto:chinesepokertips@gmail.com">chinesepokertips@gmail.com</a>.
+            Source code is published on <a href="github.com/vc0489/ChinesePokerAI">GitHub</a>.
           </p>  
+          <p>
+            Any questions, suggestions or feedback? Send a message to <a href = "mailto:chinesepokertips@gmail.com">chinesepokertips@gmail.com</a>.
+          </p>
+          
           <p>
             Unfortunately, this site has not been optimised for mobile devices yet, hopefully not for long though!
           </p>

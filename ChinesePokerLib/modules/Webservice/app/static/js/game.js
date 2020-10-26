@@ -84,6 +84,8 @@ function updateStatus(statusText, textColor=undefined) {
 }
 
 function initialiseGame() {
+  x = document.getElementById("top-nav-btn-play");
+  x.classList.add("active");
   $.ajax({
     type: 'GET',
     contentType: 'application/json',

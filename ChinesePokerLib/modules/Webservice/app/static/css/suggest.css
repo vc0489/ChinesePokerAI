@@ -11,8 +11,8 @@ input[type="checkbox"][id^="cardimg"] {
 }
 
 label {
-  border: 1px solid #fff;
-  padding: 0px;
+  /*border: 1px solid #fff;*/
+  padding: 1px;
   display: block;
   position: relative;
   margin: 0px;
@@ -67,11 +67,16 @@ label img {
   z-index: -1;
 }
 
+h2 {
+  text-align: center;
+}
 
 .card-image-container {
     display: grid;
     grid-template-columns: repeat(13, 35px);
     grid-template-rows: repeat(4, 70px) 35px 35px;
+    width: 460px;
+    margin: 0 auto;
 }
 
 .card-image {

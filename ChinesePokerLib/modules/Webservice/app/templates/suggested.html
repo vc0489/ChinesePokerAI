@@ -2,17 +2,8 @@
 {% from 'macros.html' import displayCardSet %}
 
 {% block headblock %}
-<style>
-    table, th, td {
-      border: 1px solid black;
-      border-collapse: collapse;
-    }
+<link rel="stylesheet" href="{{ url_for('static', filename='css/suggested.css') }}">
 
-    a:visited {
-        color: blue;
-        text-decoration: underline
-    }
-</style>
 {% endblock %}
 
 {% block content %}
@@ -30,11 +21,13 @@
     <h2>Suggested Splits: </h2>
     <table>
         <tr>
-            <th>Split</th>
+            <th></th>
             <th>Set 1</th>
             <th>Set 2</th>
             <th>Set 3</th> 
+            <!--
             <th></th>
+            -->
         </tr>
         
         {% for split in suggested_split_imgs %} 

@@ -364,3 +364,12 @@
     position: relative;
     bottom: 10px;
   }
+
+
+  button:disabled, button[disabled] {
+    background-color: grey;
+  }
+
+  h2 {
+    font-size: 25px;
+  }

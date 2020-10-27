@@ -71,6 +71,7 @@ var nRoundsPlayed;              // Number of rounds played counter
 var handRankEl;
 var clientIp;
 var cardIdPrefix;
+var curSelCards;
 
 // Initalise upon load
 window.onload = initialiseGame;
@@ -345,6 +346,123 @@ function getComputerSplitNew(com_id) {
   })
 }
 
+function cardClickHandler(event) {
+  event.stopPropagation();
+  cardEl = event.target;
+  if (cardEl.classList.contains("user-sel-card")) {
+    cardEl.classList.remove("user-sel-card");
+  } else {
+    cardEl.classList.add("user-sel-card");
+  }
+}
+
+function getContentWidth(element) {
+  var styles = getComputedStyle(element);
+
+  return element.clientWidth
+    - parseFloat(styles.paddingLeft)
+    - parseFloat(styles.paddingRight)
+}
+
+function updateNoCardInSet(targetSetNo, updateSetDescriptions=true) {
+  /*
+
+  */
+  let elCount;
+  let tempDesc;
+  for (let sI=1; sI<=3; sI++) {
+    elCount = document.getElementById("set" + sI.toString()).childElementCount
+    n_cards_in_set[sI-1] = elCount;
+    if (elCount !== setLengths[sI-1]) {
+      setCodes[sI-1] = '()';
+      allSplitDesc[0][sI-1] = '';
+      $( "#button-submit" ).attr("disabled", true);
+    }
+  }
+  
+  // If target contains correct number of cards then get description and check whether have valid split
+  if (document.getElementById("set" + targetSetNo.toString()).childElementCount === setLengths[targetSetNo-1]) {
+    card_ids = $("#set" + targetSetNo.toString()).sortable("toArray");
+
+    // Send ajax request to determine set descriptions
+    $.ajax({
+      type: 'POST',
+      contentType: 'application/json',
+      url: '/post/update_set_descriptions',
+      dataType: 'json',
+      data : JSON.stringify({
+        'cardIds':card_ids,
+        'set1Code': setCodes[0],
+        'set2Code': setCodes[1],
+        'set3Code': setCodes[2],
+        'targetSet': targetSetNo,
+      }),
+    }).done(function(response) {
+      
+      allSplitDesc[0][targetSetNo-1] = response['Description'];
+      let setDesc = constructHeaderContent(targetSetNo, response['Description'])
+      $( "#USER .header" + targetSetNo.toString() ).html(setDesc);
+      setCodes[targetSetNo-1] = response['SetCode'];
+
+      if (response['ValidSplit'] == 1) {
+        $( "#button-submit" ).attr("disabled", false);
+      }
+    }).fail(function() {
+      alert('Error: Could not contact server');
+    })
+  }
+}
+function setClickHandler(event) {
+  let setEl = event.target;
+  let freeSpace;
+  let setNo = null;
+  // Cards not in target set
+  var selCards = document.querySelectorAll('.user-sel-card');
+  var selCardsNotInTarget = [];
+  for (let i=0; i<selCards.length; i++) {
+    if (selCards[i].parentNode.id !== setEl.id) {
+      selCardsNotInTarget.push(selCards[i]);
+    };
+  }
+  
+  // Get location of click relative to target container
+  let doAppend;
+  let clickRelX = (event.clientX-setEl.offsetLeft)/setEl.clientWidth;
+  if (clickRelX < 0.5) {
+    doAppend = false;
+  } else {
+    doAppend = true;
+  }
+
+  // Get available space
+  let nSelected = selCards.length;
+  if (setEl.id === "card-pool") {
+    freeSpace = 13;
+    $( "#button-submit" ).attr("disabled", true);
+  } else {
+    setNo = parseInt(setEl.id.slice(-1));
+    freeSpace = setLengths[setNo-1] - n_cards_in_set[setNo-1];
+  }
+  
+  if (selCardsNotInTarget.length > freeSpace) {
+    for (let i=0; i<nSelected; i++) {
+      selCards[i].classList.remove("user-sel-card");
+    }
+  } else {
+    for (let i=0; i<nSelected; i++) {
+      selCards[i].classList.remove("user-sel-card");
+      if (doAppend) {
+        setEl.appendChild(selCards[i]);
+      } else {
+        setEl.prepend(selCards[nSelected-i-1]);
+      }
+    }
+    if (setNo !== null) {
+      updateNoCardInSet(setNo);
+    }
+  }
+}
+
 function newRound() {
   function clearAllCardsPromise() {
     return new Promise((resolve, reject) => {
@@ -414,16 +532,37 @@ function newRound() {
     return Promise.all([getComputerSplitNew(1), getComputerSplitNew(2), getComputerSplitNew(3)])
   }
   
+
+  function setUpCardClickEventsPromise() {
+    return new Promise ((resolve, reject) => {
+      let cardEl;
+      for (let cI=0; cI<13; cI++) {
+        cardEl = document.getElementById(cardIdPrefix + cI.toString());
+        cardEl.addEventListener("click", cardClickHandler);
+      }
+      for (let sI=1; sI<=3; sI++) {
+        setEl = document.getElementById('set' + sI.toString());
+        setEl.addEventListener("click", setClickHandler);
+      }
+
+      document.getElementById("card-pool").addEventListener("click", setClickHandler);
+      curSelCards = 0;
+      resolve();
+    })
+  }
   $( "#button-submit" ).hide();
   $( "#button-new-game" ).prop("disabled", true);
   $( "#button-new-round" ).prop("disabled", true);
+  $( "#button-reset" ).attr("disabled", false);
   $( "#score-table" ).hide();
   $( "#button-score-table-toggle" ).html("Show scores");    
   updateScoreTableClearGame();
   
+
   clearAllCardsPromise()
     .then(dealRoundCardsPromise)
     .then(showDealtCardsPromise)
+    .then(setUpCardClickEventsPromise)
     .then(addRoundInfoToDBPromise)
     .then(function(result) {
       $( "#button-random" ).attr("disabled", false);
@@ -584,7 +723,7 @@ function randomSplit() {
     setCodes = [response['set1Code'],response['set2Code'],response['set3Code']];
     n_cards_in_set = [...setLengths];
     $( "#button-submit" ).attr("disabled", false);
-    $( "#button-reset" ).attr("disabled", false);
+    //$( "#button-reset" ).attr("disabled", false);
   }).fail(function() {
     alert('Error: Could not contact server, try again');
   });
@@ -634,6 +773,8 @@ function validateSplit() {
 
 
 function resetCards() {
+  /* Move all cards back to pool */
+
   for (let cI=0; cI<13; cI++) {
     $( "#card-pool" ).append($( "#c" + cI.toString() ));
   }
@@ -964,7 +1105,7 @@ $( function() {
           })
         }
         n_cards_in_set[targetInd]++;
-        $( "#button-reset" ).attr("disabled", false);
+        //$( "#button-reset" ).attr("disabled", false);
       }
 
       // If card moved from a set
@@ -977,10 +1118,12 @@ $( function() {
           $('#USER > .header' + sourceIdNum).html(html_content);
         }
         n_cards_in_set[sourceInd]--;
-        if (sumArray(n_cards_in_set) == 0) {
-          $( "#button-reset" ).attr("disabled", true);
-        }
+        
+        //if (sumArray(n_cards_in_set) == 0) {
+        //  $( "#button-reset" ).attr("disabled", true);
+        //}
         setCodes[sourceInd] = '()';
+        allSplitDesc[0][sourceInd] = '';
       }
     }
   }).disableSelection();

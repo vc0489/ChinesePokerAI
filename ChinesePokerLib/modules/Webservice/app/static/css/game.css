@@ -356,3 +356,11 @@
     margin-bottom: 20px;
     display: none;
   }
+
+  .user-sel-card {
+    border-color: blue;
+    border-width: 2px;
+    border-style: solid;
+    position: relative;
+    bottom: 10px;
+  }

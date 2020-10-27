@@ -339,9 +339,9 @@ def check_valid_split(set1_code, set2_code, set3_code):
   if not set1_code.code or not set2_code.code or not set3_code.code:
     return False
 
-  print(set1_code)
-  print(set2_code)
-  print(set3_code)
+  #print(set1_code)
+  #print(set2_code)
+  #print(set3_code)
   
   if (set1_code > set2_code) | (set2_code > set3_code):
     return False

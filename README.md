@@ -32,10 +32,12 @@ To import the library in Python run
 import ChinesePokerLib
 ```
 
+
 ---
 
-I am currently working on a REST API that will allow interested developers to simulate 
-chinese poker.
+Example code snippets will be added soon.
+I am currently working on a REST API that will allow interested developers to more easily simulate 
+rounds of chinese poker.
 
 ---
 

@@ -1,4 +1,4 @@
-certifi==2020.6.20
+certifi==2022.12.7
 chardet==3.0.4
 -e git+git@github.com:vc0489/ChinesePoker.git@d9dd47234860504ff10686eb6f7894e08127be10#egg=ChinesePokerLib
 click==7.1.2
